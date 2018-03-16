@@ -61,3 +61,13 @@ This tab shows the running list of all the possibly useful data that is being ge
   |_**^download the data button**_|
 </p>
 
+|              |          Grouping           ||
+| First Header | Second Header | Third Header |
+| ------------ | :-----------: | -----------: |
+| Content      |          *Long Cell*        ||
+| Content      |   **Cell**    |         Cell |
+
+| New section  |     More      |         Data |
+| And more     |            And more         ||
+[MultiMarkdown Table]
+
