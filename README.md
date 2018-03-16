@@ -14,7 +14,8 @@ To download and launch `americanRoulette` you need to download and install `devt
 #### App Mechanics
 `americanRoulette` is divided into parts by tabs on the left and right sides of the screen.
 The left hand side tabs:
-![Alt Text](\images\lhs_tabs.png)
+
+![left hand side tabs](images\lhs_tabs.png)
     
 
     
