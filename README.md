@@ -59,6 +59,6 @@ This tab shows the running list of all the possibly useful data that is being ge
 <p align="center">
   <img src="images/download_data.png"> 
   <br/>
-  _**^download the data button**_
+  <i><b>^download the data button</b></i>
 </p>
 
