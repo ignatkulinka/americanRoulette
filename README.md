@@ -24,9 +24,9 @@ To download and launch `americanRoulette` you need to download and install `devt
 * **Manual Betting**: allows for a user to enter bets. Here the user can manually select a bet amount and then click on the roulette table to place a bet. To select the bet amount click the button with the corresponding dollar amount. The bets can be stacked by clicking the betting spot again to increase bet amount. 
 
 <p align="center">
-  |<img src="images/250_black.png"> | <img src="images/placing_ten.png"> |
-  |:---:|:---:|
-  |_**^Placing $250 on Black**_| _**^Placing ten random bets**_|
+  <img src="images/250_black.png"> <img src="images/placing_ten.png">
+  <br/>
+  <i><b>^Placing $250 on Black &nbsp;&nbsp;&nbsp; ^Placing ten random bets</b></i>
 </p>
 
 
@@ -39,8 +39,7 @@ Provides a list overview of the bets that a user has placed. The bets are divide
 <p align="center">
    <img src="images/spin_reset.png"> 
    <br/>
-  _**^spin the roulette and reset buttons**_
-
+   <i><b>^spin the roulette and reset buttons</b></i>
 </p>
 
 ### The right hand side tabs:
