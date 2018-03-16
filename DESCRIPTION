@@ -1,8 +1,15 @@
 Package: americanRoulette
 Title: Shiny R American Roulette App
-Version: 0.0.0.9000
+Version: 0.0.1.0000
 Authors@R: person("Ignat", "Kulinka", email = "ignatkulinka@gmail.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Description: American Roulette is an R Shiny implementation of the popular 
+  casino game, roulette. During the game, the player/user can click on the 
+  plot of the roulette betting table to place bets. In addition, the user 
+  can use provided CPU bet generator to help with the bet selection. The 
+  application supports bet editing as well as game-session review with helful 
+  plots and graphics. Lastly, all of the useful data generated can be exported
+  and downloaded for further analysis.
+URL: https://github.com/ignatkulinka/americanRoulette
 Depends: R (>= 3.4.3)
 License: GPL-3
 Encoding: UTF-8

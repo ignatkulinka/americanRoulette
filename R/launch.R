@@ -1,4 +1,4 @@
-#' Run the graphical interface to the game in a web browser
+#' Run the shiny application inside a web browser window
 #' @export
 launch <- function() {
   shiny::runApp(system.file("shiny", package = "americanRoulette"),

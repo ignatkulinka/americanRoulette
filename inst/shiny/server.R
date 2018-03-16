@@ -112,7 +112,7 @@ function(input, output) {
     # graph
   })
 
-  # Reactive stuff ----------------------------------------------------------
+  # Reactive stuff ---------------------------------------------------------
 
   selectedPoints <- reactiveValues(data = cbind(clickable[0, ],
                                                 betAmount = double(),
@@ -140,8 +140,6 @@ function(input, output) {
                                           cpuWinnings = 0))
 
   observeEvent(input$spin, {
-
-
     # save the bets for results tables
     resultsTable$data <- selectedPoints$data
 
@@ -153,7 +151,6 @@ function(input, output) {
     roulette$history <- c(roulette$history, roulette$winningSlot$slotLanded)
 
     if (nrow(resultsTable$data) > 0) {
-      # print(str(leftPlot$data))
       tableOverall <- data.frame(slots = apply(resultsTable$data, 1, combineSlots),
                                  betAmount = resultsTable$data$betAmount,
                                  outcome = apply(resultsTable$data, 1, checkWin),

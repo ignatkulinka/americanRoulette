@@ -2,10 +2,10 @@
 % Please edit documentation in R/launch.R
 \name{launch}
 \alias{launch}
-\title{Run the graphical interface to the game in a web browser}
+\title{Run the shiny application inside a web browser window}
 \usage{
 launch()
 }
 \description{
-Run the graphical interface to the game in a web browser
+Run the shiny application inside a web browser window
 }
