@@ -7,5 +7,9 @@ Depends: R (>= 3.4.3)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: ggthemes, ggplot2, DT, shiny
+Imports: 
+  ggthemes, 
+  ggplot2,
+  DT,
+  shiny
 RoxygenNote: 6.0.1
