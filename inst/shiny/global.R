@@ -356,3 +356,23 @@ ditch_the_axes <- ggplot2::theme(
   legend.position = "none"
 )
 
+# roulette function & helpers----------------------------------------------
+roulette <- function(verbose = FALSE) {
+  slotLanded <- sample(possibleSlots, 1)
+  if (verbose)
+    cat("Landed on:", slotLanded, "\n")
+
+  tableIndex <- which(bettingTable$slotNum == slotLanded)
+
+  return(list(slotLanded = slotLanded,
+              color = bettingTable$color[tableIndex],
+              even = bettingTable$even[tableIndex],
+              odd = bettingTable$odd[tableIndex],
+              low = bettingTable$low[tableIndex],
+              high = bettingTable$high[tableIndex],
+              snakeBet = bettingTable$snakeBet[tableIndex],
+              dozen = bettingTable$dozen[tableIndex],
+              column = bettingTable$column[tableIndex]))
+}
+
+
