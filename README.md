@@ -1,5 +1,5 @@
 # americanRoulette - R Shiny Implementation
-`americanRoulette` is a R Shiny implementation of the American Roulette, the popular casino game. 
+`americanRoulette` is a R Shiny implementation of the American Roulette, the popular casino game. The loaded and running applet can be tried at [ignatkulinka.shinyapps.io/AmericanRoulette/](http://ignatkulinka.shinyapps.io/AmericanRoulette/).
 
 
 ## Quick Start
