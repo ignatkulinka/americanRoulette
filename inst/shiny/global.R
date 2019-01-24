@@ -359,14 +359,14 @@ uniqueBets <- clickable[!duplicated(clickable[3:10]),]
 cols <- c("1" = "red", "2" = "black", "3" = "darkgreen", "4" = "white")
 colsTwo <- c("1" = "white", "2" = "white", "3" = "white", "4" = rgb(0,0,0,0))
 
-ditch_the_axes <- ggplot2::theme(
-  axis.text = ggplot2::element_blank(),
-  axis.line = ggplot2::element_blank(),
-  axis.ticks = ggplot2::element_blank(),
-  panel.border = ggplot2::element_blank(),
-  panel.grid = ggplot2::element_blank(),
-  axis.title = ggplot2::element_blank(),
-  plot.margin = ggplot2::unit(c(1,1,1,1), "cm"),
+ditch_the_axes <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(),
+  plot.margin = unit(c(1,1,1,1), "cm"),
   legend.position = "none"
 )
 

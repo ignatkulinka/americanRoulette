@@ -36,85 +36,117 @@ function(input, output) {
 # II. Plots ---------------------------------------------------------------
   # Roulette table
   output$rTable <- renderPlot({
-    rouletteTable <- ggplot2::ggplot() +
-      ggplot2::geom_tile(data = df, ggplot2::aes(x, y, fill = factor(z), color = factor(z)), size = 1.5) +
-      ggplot2::geom_polygon(data = twoToOne1, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = twoToOne2, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = twoToOne3, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = oneToEighteenSlots, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = redSlots, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = evenSlots, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = oddSlots, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = blackSlots, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = thirdTwelveSlots, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = secondTwelveSlots, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = firstTwelveSlots, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = ninteenThirtysixSlots, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
-      ggplot2::geom_polygon(data = zeroPentagon, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 1.5) +
-      ggplot2::geom_polygon(data = doubleZeroPentagon, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 1.5) +
-      ggplot2::scale_fill_manual(values = cols) +
-      ggplot2::scale_color_manual(values = colsTwo) +
-      ggplot2::coord_equal() +
-      ggplot2::coord_fixed() +
-      ggplot2::theme_bw() +
+    rouletteTable <- ggplot() +
+      geom_tile(data = df, aes(x, y, fill = factor(z), color = factor(z)), size = 1.5) +
+      geom_polygon(data = twoToOne1, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = twoToOne2, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = twoToOne3, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = oneToEighteenSlots, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = redSlots, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = evenSlots, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = oddSlots, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = blackSlots, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = thirdTwelveSlots, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = secondTwelveSlots, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = firstTwelveSlots, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = ninteenThirtysixSlots, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
+      geom_polygon(data = zeroPentagon, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 1.5) +
+      geom_polygon(data = doubleZeroPentagon, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 1.5) +
+      scale_fill_manual(values = cols) +
+      scale_color_manual(values = colsTwo) +
+      coord_equal() +
+      coord_fixed() +
+      theme_bw() +
       #ditch_the_axes +
       # 1-3: white circles; 4: transparent
-      #ggplot2::geom_circle(ggplot2::aes(x0=c(df$x,0.5, 3.5, columnBets$x, splitBets$x, dozenBets$x,
+      #geom_circle(aes(x0=c(df$x,0.5, 3.5, columnBets$x, splitBets$x, dozenBets$x,
       # outsideBets$x, quadBets$x, lineBets$x, streetBets$x, trioBets$x, topLineBets$x), y0=c(df$y, 23.9, 23.9, columnBets$y,
       # splitBets$y, dozenBets$y, outsideBets$y, quadBets$y, lineBets$y, streetBets$y, trioBets$y, topLineBets$y), r=.7, color =
       # factor('4'))) +
-      ggplot2::annotate("text", x = df$x, y = df$y, label = annotationLabels, color = "white") +
-      ggplot2::annotate("text", x = zerosAnnotationCoords$x, y = zerosAnnotationCoords$y, label = c("0", "00"),
+      annotate("text", x = df$x, y = df$y, label = annotationLabels, color = "white") +
+      annotate("text", x = zerosAnnotationCoords$x, y = zerosAnnotationCoords$y, label = c("0", "00"),
                color = "white") +
-      ggplot2::annotate("text", x = columnAnnotationCoords$x, y = columnAnnotationCoords$y, label = "2:1",
+      annotate("text", x = columnAnnotationCoords$x, y = columnAnnotationCoords$y, label = "2:1",
                size = 3.5, color = "white") +
-      ggplot2::annotate("text", x = rep(-2, 3), y = c(3, 11, 19), label = c("3rd 12", "2nd 12", "1st 12"),
+      annotate("text", x = rep(-2, 3), y = c(3, 11, 19), label = c("3rd 12", "2nd 12", "1st 12"),
                color = "white", angle = -90, size = 5) +
-      ggplot2::annotate("text", x = rep(-4, 6), y = c(1, 5, 9, 13, 17, 21), label = c("19to36", "Odd", "Black", "Red", "Even", "1to18"), color = "white", angle = -90, size = 4) +
+      annotate("text", x = rep(-4, 6), y = c(1, 5, 9, 13, 17, 21), label = c("19to36", "Odd", "Black", "Red", "Even", "1to18"), color = "white", angle = -90, size = 4) +
       # show all clickable points
-      ggplot2::geom_point(data = clickable, ggplot2::aes(x=x, y=y)) +
-      ggplot2::geom_point(data = NULL, ggplot2::aes(x = selectedPoints$data$x, y = selectedPoints$data$y),
+      geom_point(data = clickable, aes(x=x, y=y)) +
+      geom_point(data = NULL, aes(x = selectedPoints$data$x, y = selectedPoints$data$y),
                  colour = "dimgray", size = 12) +
-      ggplot2::geom_point(data = NULL, ggplot2::aes(x = selectedPoints$data$x, y = selectedPoints$data$y),
+      geom_point(data = NULL, aes(x = selectedPoints$data$x, y = selectedPoints$data$y),
                  colour = "royalblue4", size = 9) +
-      ggplot2::annotate("text", x = selectedPoints$data$x, y = selectedPoints$data$y, label = selectedPoints$data$betAmount,
+      annotate("text", x = selectedPoints$data$x, y = selectedPoints$data$y, label = selectedPoints$data$betAmount,
                color = "white", size = 4)
     rouletteTable
   }, width = 700, height = 700)
 
   output$mainPlot <- renderPlot({
     # [,1]: balance [,2]: count
-    graph <- ggplot2::ggplot(data = NULL, ggplot2::aes(x = outcomesList$data[, 2], y = outcomesList$data[, 1])) +
-      ggplot2::geom_line() +
-      ggplot2::geom_point() +
-      ggthemes::theme_hc() +
-      ggplot2::labs(x = "Number of Rounds", y = "Total Balance") +
-      ggplot2::xlim(0, length(outcomesList$data) + 5) +
-      ggplot2::coord_cartesian(ylim = c(min(outcomesList$data[, 1]) - 5, max(outcomesList$data[, 1]) + 5))
-    graph
+
+    print(paste("current balance:", outcomesList$data[nrow(outcomesList$data), 1]))
+    print(paste("current bet: ", outcomesList$data[nrow(outcomesList$data), 2]))
+
+    print(paste(seq((min(outcomesList$data[, 1]) + 1) * 2, (max(outcomesList$data[, 1]) + 1) * 2)))
+    print(paste("len breaks:", length(seq((min(outcomesList$data[, 1]) + 1) * 2, (max(outcomesList$data[, 1]) + 1) * 2))))
+
+
+    # print((c(rep("A", length(seq((min(outcomesList$data[, 1]) + 1) * 2, outcomesList$data[-1,1]))),
+    #                outcomesList$data[-1,1],
+    #                rep("B", length(seq(outcomesList$data[-1,1], max(outcomesList$data[, 1]) + 1) * 2 )))))
+    # print(length(c(rep("A", length(seq((min(outcomesList$data[, 1]) + 1) * 2, outcomesList$data[-1,1]))),
+    #                outcomesList$data[-1,1],
+    #                rep("B", length(seq(outcomesList$data[-1,1], max(outcomesList$data[, 1]) + 1) * 2 )))))
+
+    # ggplot(data = NULL, aes(x = outcomesList$data[, 2], y = outcomesList$data[, 1])) +
+    #   geom_line() +
+    #   geom_point() +
+    #   labs(x = "Round Number", y = "Total Balance") +
+    #   scale_x_continuous(limits = c(0, round(max(outcomesList$data[,2]) * 1.5)),
+    #                      breaks = seq(0, round(max(outcomesList$data[,2]) * 1.5)),
+    #                      labels = c(rep("", max(outcomesList$data[,2])), max(outcomesList$data[,2]),
+    #                                 rep("", round(max(outcomesList$data[,2]) * 1.5) - max(outcomesList$data[,2])))) +
+    #   scale_y_continuous(limits = c((min(outcomesList$data[, 1]) + 1) * 2, (max(outcomesList$data[, 1]) + 1) * 2),
+    #                      breaks = seq((min(outcomesList$data[, 1]) + 1) * 2, (max(outcomesList$data[, 1]) + 1) * 2),
+    #                      labels = c(rep("", length(seq((min(outcomesList$data[, 1]) + 1) * 2, outcomesList$data[-1,1]))),
+    #                                 outcomesList$data[-1,1],
+    #                                 rep("", length(seq(outcomesList$data[-1,1], max(outcomesList$data[, 1]) + 1) * 2) - 1))) +
+    #   geom_hline(yintercept = outcomesList$data[-1,1], linetype = "dotted") +
+    #   geom_vline(xintercept = max(outcomesList$data[,2]), linetype = "dotted") +
+    #   theme(panel.grid.major = element_blank(),
+    #         panel.grid.minor = element_blank(),
+    #         panel.background = element_blank(),
+    #         axis.line = element_blank(),
+    #         axis.ticks.y.left = element_blank())
   })
 
-  output$leftPlot <- renderPlot({
+  output$bottomLeftPlot <- renderPlot({
     df <- data.frame(num = leftPlot$data[c(1, 3)], names = c("Manual", "CPU"))
 
-    graph <- ggplot2::ggplot(data = df, ggplot2::aes(x = names, y = num)) +
-      ggplot2::geom_bar(stat = "identity", width = 0.4) +
-      ggthemes::theme_hc() +
-      ggplot2::labs(x = "Bet Type", y = "Number of Bets Won") +
-      ggplot2::coord_cartesian(ylim = c(min(df$num) - 2, max(df$num) + 2))
+    ggplot(data = df, aes(x = names, y = num)) +
+      geom_bar(stat = "identity", width = 0.4) +
+      labs(x = "Bet Type", y = "Number of Bets Won") +
+      coord_cartesian(ylim = c(min(df$num) - 2, max(df$num) + 2)) +
+      theme(panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank(),
+            axis.line = element_blank())
 
-    graph
   })
 
-  output$rightPlot <- renderPlot({
+  output$midPlot <- renderPlot({
     df <- data.frame(x = as.character(roulette$history))
-    ggplot2::ggplot(df, ggplot2::aes(factor(x))) +
-      ggplot2::geom_bar(stat = "count", width = 0.6) +
-      ggthemes::theme_hc() +
-      ggplot2::labs(x = "Slot Number", y = "Frequency") +
-      ggplot2::coord_cartesian(ylim = c(0, 5))
 
-    # graph
+    ggplot(df, aes(x = factor(x, levels = c("0", "00", seq(1, 36, 1))))) +
+      geom_bar(stat = "count", width = 0.6) +
+      labs(x = "Slot Number", y = "Frequency") +
+      scale_y_continuous(breaks = seq(0, ifelse(length(df$x) > 0, max(table(df$x)), 1))) +
+      theme(panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank(),
+            axis.line = element_blank())
+
   })
 
 
@@ -179,11 +211,12 @@ function(input, output) {
 
       totalsOverall <- data.frame(outcome = apply(tableOverall, 1, computeTotal),
                                   stringsAsFactors = FALSE)
-
+      #print(tableOverall)
+      #print(totalsOverall)
       completeList$data <- rbind(completeList$data,
                                  cbind(slots = apply(resultsTable$data, 1, combineSlots),
                                        resultsTable$data[,10:ncol(resultsTable$data)],
-                                       outcome = apply(tableOverall, 1, computeTotal),
+                                       outcome = apply(resultsTable$data, 1, checkWin),
                                        winningSlot = roulette$winningSlot$slotLanded))
 
 
@@ -355,7 +388,7 @@ function(input, output) {
     if (substr(row[3], 1, 1) == "l") {
       return(-1 * as.numeric(row[2]))
     } else {
-      return(as.numeric(row[2]))
+      return(as.numeric(str_extract(row[3], "(?<=won: \\$)\\d*")))
     }
   }
 
