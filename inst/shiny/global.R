@@ -371,7 +371,6 @@ ditch_the_axes <- ggplot2::theme(
 )
 
 
-
 # VI. Roulette Function & Helpers -----------------------------------------
 
 # A. Function responsible for picking a random number out of the slots a
@@ -398,5 +397,3 @@ roulette <- function(verbose = FALSE) {
               dozen = bettingTable$dozen[tableIndex],
               column = bettingTable$column[tableIndex]))
 }
-
-
