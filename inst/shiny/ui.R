@@ -11,48 +11,48 @@ shiny::fluidPage(
                   shiny::tabsetPanel(
                     shiny::tabPanel("Betting",
                                     shiny::br(),
-                      ### Manual Betting
-                      shiny::h4("Manual Betting"),
-                      shiny::strong("Bet Amount:"),
-                      shiny::br(),
-                      # \10\25\50\100\250\ bet buttons
-                      shiny::actionButton("bet1", "$10"),
-                      shiny::actionButton("bet2", "$25"),
-                      shiny::actionButton("bet3", "$50"),
-                      shiny::actionButton("bet4", "$100"),
-                      shiny::actionButton("bet5", "$250"),
-                      shiny::hr(),
-                      ### Computer Assisted Betting
-                      shiny::h4("Computer Assisted Betting"),
-                      shiny::sliderInput("numBets", "Number of Random Bets:", min = 1, max = 35, value = 1),
-                      shiny::actionButton("random", "Place random bet(s)"),
-                      shiny::br(),
-                      shiny::br(),
-                      shiny::strong("Other computer generated bets")
-             ),
-             shiny::tabPanel("Summary",
-                             shiny::br(),
-                      ### Manual Bet List
-                      shiny::h4("Manual Bets"),
-                      DT::DTOutput('viewManual'),
-                      shiny::hr(),
-                      ### Computer Assisted Bets
-                      shiny::h4("Computer Assisted Bets"),
-                      DT::DTOutput("viewCPU"),
-                      shiny::hr(),
-                      ###\Spin Roulette\Reset Bets\
-                      shiny::actionButton("spin", "Spin Roulette"),
-                      shiny::actionButton("reset", "Reset Bets"),
-                      shiny::hr(),
-                      ### Results
-                      shiny::h4("Results"),
-                      shiny::verbatimTextOutput("roulette", placeholder = FALSE),
-                      DT::DTOutput("result"),
-                      shiny::verbatimTextOutput("total", placeholder = FALSE)))),
+                                    ### Manual Betting
+                                    shiny::h4("Manual Betting"),
+                                    shiny::strong("Bet Amount:"),
+                                    shiny::br(),
+                                    # \10\25\50\100\250\ bet buttons
+                                    shiny::actionButton("bet1", "$10"),
+                                    shiny::actionButton("bet2", "$25"),
+                                    shiny::actionButton("bet3", "$50"),
+                                    shiny::actionButton("bet4", "$100"),
+                                    shiny::actionButton("bet5", "$250"),
+                                    shiny::hr(),
+                                    ### Computer Assisted Betting
+                                    shiny::h4("Computer Assisted Betting"),
+                                    shiny::sliderInput("numBets", "Number of Random Bets:", min = 1, max = 35, value = 1),
+                                    shiny::actionButton("random", "Place random bet(s)"),
+                                    shiny::br(),
+                                    shiny::br(),
+                                    shiny::strong("Other computer generated bets")
+                    ),
+                    shiny::tabPanel("Summary",
+                                    shiny::br(),
+                                    ### Manual Bet List
+                                    shiny::h4("Manual Bets"),
+                                    DT::DTOutput("viewManual"),
+                                    shiny::hr(),
+                                    ### Computer Assisted Bets
+                                    shiny::h4("Computer Assisted Bets"),
+                                    DT::DTOutput("viewCPU"),
+                                    shiny::hr(),
+                                    ###\Spin Roulette\Reset Bets\
+                                    shiny::actionButton("spin", "Spin Roulette"),
+                                    shiny::actionButton("reset", "Reset Bets"),
+                                    shiny::hr(),
+                                    ### Results
+                                    shiny::h4("Results"),
+                                    shiny::verbatimTextOutput("roulette", placeholder = FALSE),
+                                    DT::DTOutput("result"),
+                                    shiny::verbatimTextOutput("total", placeholder = FALSE)))),
     shiny::column(7,
                   shiny::tabsetPanel(
                     shiny::tabPanel("Roulette Table",
-                      shiny::plotOutput("plot0", click = "plot_click", width = "100%")),
+                                    shiny::plotOutput("rTable", click = "plot_click", width = "100%")),
                     shiny::tabPanel("Summary Plots",
                                     shiny::fluidRow(
                                       shiny::column(12,
@@ -67,24 +67,20 @@ shiny::fluidPage(
                                                       shiny::column(8,
                                                                     shiny::br(),
                                                                     shiny::h4("Winning Slots Distribution"),
-                                                                    shiny::plotOutput("rightPlot", height = "250px", width = "100%")
-                                 )
-                               )
-                        )
-                      )
-             ),
-             shiny::tabPanel("Data Output",
-                             shiny::br(),
-                             shiny::fluidRow(
-                               shiny::column(8,
-                                             shiny::h4("Data Generated by the Simulation")),
-                               shiny::column(4,
-                                             shiny::downloadButton("downloadData", "Download")),
-                               shiny::fluidRow(
-                                 shiny::column(12,
-                                               DT::DTOutput("dataOutput"))
-                      )
-                      )
-             )
-           )) #,tags$style(type="text/css", ".recalculating {opacity: 1.0;}")
+                                                                    shiny::plotOutput("rightPlot", height = "250px", width = "100%")))))
+                    ),
+                    shiny::tabPanel("Data Output",
+                                    shiny::br(),
+                                    shiny::fluidRow(
+                                      shiny::column(8,
+                                                    shiny::h4("Data Generated by the Simulation")),
+                                      shiny::column(4,
+                                                    shiny::downloadButton("downloadData", "Download")),
+                                      shiny::fluidRow(
+                                        shiny::column(12,
+                                                      DT::DTOutput("dataOutput"))
+                                      )
+                                    )
+                    )
+                  )) #,tags$style(type="text/css", ".recalculating {opacity: 1.0;}")
   ))

@@ -2,9 +2,12 @@
 # Ignat Kulinka
 
 function(input, output) {
-  # Bet amount selection ----------------------------------------------------
+
+# I. Bet Amount Selection -------------------------------------------------
+  # Store the bet amount
   bet <- reactiveValues(amount = 10)
 
+  # Choose the bet amount
   observeEvent(input$bet1, {
     print("Bet changed to $10")
     bet$amount <- 10
@@ -29,8 +32,10 @@ function(input, output) {
     bet$amount <- 250
   })
 
-  # Plots ------------------------------------------------------------------
-  output$plot0 <- shiny::renderPlot({
+
+# II. Plots ---------------------------------------------------------------
+  # Roulette table
+  output$rTable <- renderPlot({
     rouletteTable <- ggplot2::ggplot() +
       ggplot2::geom_tile(data = df, ggplot2::aes(x, y, fill = factor(z), color = factor(z)), size = 1.5) +
       ggplot2::geom_polygon(data = twoToOne1, ggplot2::aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 2) +
@@ -52,7 +57,7 @@ function(input, output) {
       ggplot2::coord_equal() +
       ggplot2::coord_fixed() +
       ggplot2::theme_bw() +
-      ditch_the_axes +
+      #ditch_the_axes +
       # 1-3: white circles; 4: transparent
       #ggplot2::geom_circle(ggplot2::aes(x0=c(df$x,0.5, 3.5, columnBets$x, splitBets$x, dozenBets$x,
       # outsideBets$x, quadBets$x, lineBets$x, streetBets$x, trioBets$x, topLineBets$x), y0=c(df$y, 23.9, 23.9, columnBets$y,
@@ -66,7 +71,8 @@ function(input, output) {
       ggplot2::annotate("text", x = rep(-2, 3), y = c(3, 11, 19), label = c("3rd 12", "2nd 12", "1st 12"),
                color = "white", angle = -90, size = 5) +
       ggplot2::annotate("text", x = rep(-4, 6), y = c(1, 5, 9, 13, 17, 21), label = c("19to36", "Odd", "Black", "Red", "Even", "1to18"), color = "white", angle = -90, size = 4) +
-      # ggplot2::geom_point(data = clickable, ggplot2::aes(x=x, y=y)) +
+      # show all clickable points
+      ggplot2::geom_point(data = clickable, ggplot2::aes(x=x, y=y)) +
       ggplot2::geom_point(data = NULL, ggplot2::aes(x = selectedPoints$data$x, y = selectedPoints$data$y),
                  colour = "dimgray", size = 12) +
       ggplot2::geom_point(data = NULL, ggplot2::aes(x = selectedPoints$data$x, y = selectedPoints$data$y),
@@ -80,7 +86,6 @@ function(input, output) {
     # [,1]: balance [,2]: count
     graph <- ggplot2::ggplot(data = NULL, ggplot2::aes(x = outcomesList$data[, 2], y = outcomesList$data[, 1])) +
       ggplot2::geom_line() +
-      # labs(title = 'Total Balance vs. Number of Bets') +
       ggplot2::geom_point() +
       ggthemes::theme_hc() +
       ggplot2::labs(x = "Number of Rounds", y = "Total Balance") +
@@ -112,7 +117,8 @@ function(input, output) {
     # graph
   })
 
-  # Reactive stuff ---------------------------------------------------------
+
+# III. Reactive Data Frames -----------------------------------------------
 
   selectedPoints <- reactiveValues(data = cbind(clickable[0, ],
                                                 betAmount = double(),
@@ -138,6 +144,8 @@ function(input, output) {
                                           manualWinnings = 0,
                                           cpuNumWins = 0,
                                           cpuWinnings = 0))
+
+# IV. Event Observers -----------------------------------------------------
 
   observeEvent(input$spin, {
     # save the bets for results tables
@@ -173,10 +181,10 @@ function(input, output) {
                                   stringsAsFactors = FALSE)
 
       completeList$data <- rbind(completeList$data,
-                                  cbind(slots = apply(resultsTable$data, 1, combineSlots),
-                                        resultsTable$data[,10:ncol(resultsTable$data)],
-                                        outcome = apply(tableOverall, 1, computeTotal),
-                                        winningSlot = roulette$winningSlot$slotLanded))
+                                 cbind(slots = apply(resultsTable$data, 1, combineSlots),
+                                       resultsTable$data[,10:ncol(resultsTable$data)],
+                                       outcome = apply(tableOverall, 1, computeTotal),
+                                       winningSlot = roulette$winningSlot$slotLanded))
 
 
       totalsList <- totalsOverall$outcome
@@ -271,56 +279,8 @@ function(input, output) {
     }
   })
 
-  output$roulette <- renderText({
-    if (!is.null(roulette$winningSlot)) {
-      paste("The winning slot is:", roulette$winningSlot$slotLanded)
-    } else {
-      return(invisible(NULL))
-    }
-  })
 
-  combineSlots <- function(row) {
-    betList = c(row[3])
-    index = 3
-
-    while (!is.na(row[index])) {
-      if (index > 8) {
-        break
-      }
-      index = index + 1
-    }
-
-    if (index == 4) {
-      return(betList)
-    } else {
-      for (i in 4:(index - 1)) {
-        betList = paste(betList, row[i], sep = ", ")
-      }
-      return(betList)
-    }
-  }
-
-  output$result <- DT::renderDT({
-    # no bets placed before rolling the roulette
-    if (nrow(resultsTable$data) == 0) {
-      return(invisible(NULL))
-    } else {
-      table <- data.frame(slots = apply(resultsTable$data, 1, combineSlots),
-                          betAmount = resultsTable$data$betAmount,
-                          outcome = apply(resultsTable$data, 1, checkWin),
-                          stringsAsFactors = FALSE)
-      DT::datatable(table, colnames = c("Slots", "Bet Amount", "Outcome"),
-                rownames = FALSE, options = list(pageLength = 5, sDom = "<\"top\">rt<\"bottom\">ip"))
-    }
-
-  })
-
-  output$dataOutput <- DT::renderDT({
-    DT::datatable(completeList$data, rownames = FALSE,
-              colnames = c("Slots", "Bet Amount", "Manual Bet", "Outcome", "Winning Slot"),
-              options = list(pageLength = 10, sDom = "<\"top\">rt<\"bottom\">ip",
-                             language = list(zeroRecords = "Completed bets are listed here")))
-  })
+# V. Helper Functions -----------------------------------------------------
 
   checkWin <- function(row) {
     # check for inside bets first row[10] -> row$type
@@ -399,6 +359,60 @@ function(input, output) {
     }
   }
 
+  combineSlots <- function(row) {
+    betList = c(row[3])
+    index = 3
+
+    while (!is.na(row[index])) {
+      if (index > 8) {
+        break
+      }
+      index = index + 1
+    }
+
+    if (index == 4) {
+      return(betList)
+    } else {
+      for (i in 4:(index - 1)) {
+        betList = paste(betList, row[i], sep = ", ")
+      }
+      return(betList)
+    }
+  }
+
+
+# VI. Outputs for UI ------------------------------------------------------
+
+  output$roulette <- renderText({
+    if (!is.null(roulette$winningSlot)) {
+      paste("The winning slot is:", roulette$winningSlot$slotLanded)
+    } else {
+      return(invisible(NULL))
+    }
+  })
+
+  output$result <- DT::renderDT({
+    # no bets placed before rolling the roulette
+    if (nrow(resultsTable$data) == 0) {
+      return(invisible(NULL))
+    } else {
+      table <- data.frame(slots = apply(resultsTable$data, 1, combineSlots),
+                          betAmount = resultsTable$data$betAmount,
+                          outcome = apply(resultsTable$data, 1, checkWin),
+                          stringsAsFactors = FALSE)
+      DT::datatable(table, colnames = c("Slots", "Bet Amount", "Outcome"),
+                rownames = FALSE, options = list(pageLength = 5, sDom = "<\"top\">rt<\"bottom\">ip"))
+    }
+
+  })
+
+  output$dataOutput <- DT::renderDT({
+    DT::datatable(completeList$data, rownames = FALSE,
+              colnames = c("Slots", "Bet Amount", "Manual Bet", "Outcome", "Winning Slot"),
+              options = list(pageLength = 10, sDom = "<\"top\">rt<\"bottom\">ip",
+                             language = list(zeroRecords = "Completed bets are listed here")))
+  })
+
   output$total <- renderText({
     if (nrow(resultsTable$data) == 0) {
       return(invisible(NULL))
@@ -448,11 +462,12 @@ function(input, output) {
   })
 
   # Downloadable csv
-  output$downloadData <- downloadHandler(
-    filename = function() {
-      paste(input$dataset, ".csv", sep = "")
-    },
+ output$downloadData <- downloadHandler(
+    filename = function(){
+      paste("American Roulette", Sys.Date(), ".csv", sep = "")
+      },
     content = function(file) {
+      print(completeList$data)
       write.csv(completeList$data, file, row.names = FALSE)
     }
   )
