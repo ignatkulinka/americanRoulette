@@ -75,3 +75,10 @@ This tab shows the running list of all the possibly useful data that is being ge
   <i><b>^download the data button</b></i>
 </p>
 
+#### Future Updates
+Currently, the plan is to continue developing a variety of multi-user functionalities. Additions such as a group chat/log, as well as allowing users to choose a personal chip color are coming. Ideally, a complete multiplayer update would also include methods to have active players democratically vote on ending a round of betting and spinning the roulette wheel.
+
+
+
+
+

@@ -55,10 +55,11 @@ fluidPage(
                       ### Computer Assisted Betting
                       h4("Computer Assisted Betting"),
                       sliderInput("numBets", "Number of Random Bets:", min = 1, max = 35, value = 1),
-                      actionButton("random", "Place random bet(s)"),
-                      br(),
-                      br(),
-                      strong("Other computer generated bets")
+                      actionButton("random", "Place random bet(s)")
+                      #br(),
+                      #br(),
+                      # COMING SOON
+                      #strong("Other computer generated bets")
              ),
              tabPanel("Summary",
                       br(),
