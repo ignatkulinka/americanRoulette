@@ -18,7 +18,7 @@ To download and launch `americanRoulette` you need to download and install `devt
     install.packages("PACKAGE NAME HERE")
 
 ## App Mechanics
-* **NEW**: Multiple sessions are now allowed! Join others playing on the hosted app or run multiple sessions on your machine/local server. On your local server/machine open multiple windows in your web browser or use R Studio built-in browser as one of the sessions.
+**NEW**: Multiple sessions are now allowed! Join others playing on the hosted app or run multiple sessions on your machine/local server. On your local server/machine open multiple windows in your web browser or use R Studio built-in browser as one of the sessions.
 
 
 `americanRoulette` is divided into parts by tabs on the left and right sides of the screen.
@@ -60,6 +60,8 @@ Provides a list overview of the bets that a user has placed. The bets are divide
 This tab outputs a simulation of the American roulette table. This plot can be clicked to place bets. The clickable spots follow the general official rules for betting. Bets can be stacked on top of each other by clicking them again.
 
 #### Summary Plots
+**NEW**: Better plots have been added and the old ones have been overhauled. 
+
 This tab provides a useful insight into the statistics behind the current game session. Monitor the amount of money won/lost, number of bets won, frequency of winning slots and many more. 
 
 #### Data Output
