@@ -60,7 +60,7 @@ Provides a list overview of the bets that a user has placed. The bets are divide
 This tab outputs a simulation of the American roulette table. This plot can be clicked to place bets. The clickable spots follow the general official rules for betting. Bets can be stacked on top of each other by clicking them again.
 
 #### Summary Plots
-This tab allows the user to monitor their game session. The user can look at the running total of money lost or won from round to round. In addition, this tab has a bar plot which compares the number of bets won by manual vs CPU bets. Lastly, the third plot shows the frequency bar plot of the slots on the roulette wheel. 
+This tab provides a useful insight into the statistics behind the current game session. Monitor the amount of money won/lost, number of bets won, frequency of winning slots and many more. 
 
 #### Data Output
 **Warning**: Data download option only functions when the app is open in web browser. At the moment, downloading data from the built-in R Studio browser is not possible.
