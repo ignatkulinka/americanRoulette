@@ -96,7 +96,7 @@ fluidPage(
                                                                plotOutput("bottomMidPlot", height = "180px", width = "100%")),
                                                         column(4,
                                                                br(),
-                                                               h4("Bets Won vs Lost"),
+                                                               h4("Number of Bets Won vs Lost"),
                                                                plotOutput("bottomRightPlot", height = "180px", width = "100%")))))))),
              tabPanel("Data Output",
                       br(),

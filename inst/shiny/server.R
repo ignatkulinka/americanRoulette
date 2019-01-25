@@ -117,19 +117,65 @@ function(input, output) {
         axis.text.y = element_text(size = 12))
   })
 
-  # output$bottomLeftPlot <- renderPlot({
-  #   df <- data.frame(num = leftPlot$data[c(1, 3)], names = c("Manual", "CPU"))
-  #
-  #   ggplot(data = df, aes(x = names, y = num)) +
-  #     geom_bar(stat = "identity", width = 0.4) +
-  #     labs(x = "Bet Type", y = "Number of Bets Won") +
-  #     coord_cartesian(ylim = c(min(df$num) - 2, max(df$num) + 2)) +
-  #     theme(panel.grid.major = element_blank(),
-  #           panel.grid.minor = element_blank(),
-  #           panel.background = element_blank(),
-  #           axis.line = element_blank())
-  #
-  # })
+  output$bottomLeftPlot <- renderPlot({
+    # Plot amount won by CPU vs Manual
+    # Data cols:
+    # manualNumWins manualWinnings manualNumBets cpuNumWins cpuWinings cpuNumBets
+    df <- data.frame(num = bottomPlotsData$data[c(2, 5)], names = c("Manual", "CPU"))
+
+    ggplot(data = df, aes(x = names, y = num)) +
+      geom_bar(stat = "identity", width = 0.4) +
+      labs(x = "", y = "Amount Won") +
+      geom_text(aes(label = df$num), position = position_dodge(width = 0.4), vjust = 1.2) +
+      coord_cartesian(ylim = c(min(df$num) * 1.1, max(df$num) * 1.1)) +
+      theme(panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank(),
+            axis.line = element_blank(),
+            axis.text.x.bottom = element_text(size = 12),
+            axis.text.y.left = element_text(size = 12))
+
+  })
+
+  output$bottomMidPlot <- renderPlot({
+    # Plot the number of bets won by CPU vs Manual
+    df <- data.frame(num = bottomPlotsData$data[c(1, 4)], names = c("Manual", "CPU"))
+
+    ggplot(data = df, aes(x = names, y = num)) +
+      geom_bar(stat = "identity", width = 0.4) +
+      labs(x = "", y = "Number of Bets Won") +
+      geom_text(aes(label = df$num), position = position_dodge(width = 0.4), vjust = -0.25) +
+      coord_cartesian(ylim = c(0, max(df$num) + 2)) +
+      theme(panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank(),
+            axis.line = element_blank(),
+            axis.text.x.bottom = element_text(size = 12),
+            axis.text.y.left = element_text(size = 12))
+
+  })
+
+  output$bottomRightPlot <- renderPlot({
+    # Plot the overall bets won vs list (CPU and Manual combined)
+    df <- data.frame(num = c(bottomPlotsData$data[1] + bottomPlotsData$data[4],
+                             bottomPlotsData$data[3] + bottomPlotsData$data[6] - (bottomPlotsData$data[1] + bottomPlotsData$data[4])),
+                     names = c("Won", "Lost"))
+    print(as.vector(df$num))
+    ggplot(data = df, aes(x = names, y = num)) +
+      geom_bar(stat = "identity", width = 0.4) +
+      geom_text(aes(label = df$num), position = position_dodge(width = 0.4), vjust = -0.25) +
+      labs(x = "", y = "Number of Bets") +
+      scale_y_continuous(limits = c(0, max(df$num) + 2),
+                         breaks = seq(0, max(df$num) + 2, ceiling(length(seq(0, max(df$num) + 2)) / 5)),
+                         labels = seq(0, max(df$num) + 2, ceiling(length(seq(0, max(df$num) + 2)) / 5))) +
+      theme(panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank(),
+            axis.line = element_blank(),
+            axis.text.x.bottom = element_text(size = 12),
+            axis.text.y.left = element_text(size = 12))
+
+  })
 
   output$midPlot <- renderPlot({
     df <- data.frame(x = as.character(roulette$history))
@@ -141,7 +187,11 @@ function(input, output) {
       theme(panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             panel.background = element_blank(),
-            axis.line = element_blank())
+            axis.line = element_blank(),
+            axis.text.x = element_text(size = 11),
+            axis.text.y = element_text(size = 12),
+            axis.title.x.bottom = element_text(size = 12),
+            axis.title.y.left = element_text(size = 12))
 
   })
 
@@ -168,10 +218,12 @@ function(input, output) {
   outcomesList <- reactiveValues(data = cbind(balance = 0,
                                               betNum = 0))
 
-  leftPlot <- reactiveValues(data = cbind(manualNumWins = 0,
+  bottomPlotsData <- reactiveValues(data = cbind(manualNumWins = 0,
                                           manualWinnings = 0,
+                                          manualNumBets = 0,
                                           cpuNumWins = 0,
-                                          cpuWinnings = 0))
+                                          cpuWinnings = 0,
+                                          cpuNumBets = 0))
 
 # IV. Event Observers -----------------------------------------------------
 
@@ -192,39 +244,43 @@ function(input, output) {
                                  outcome = apply(resultsTable$data, 1, checkWin),
                                  manualBet = resultsTable$data$manualBet,
                                  stringsAsFactors = FALSE)
+      # Grab the manual bets and sum the bet outcomes
+      manualTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == TRUE, ], 1, computeTotal),
+                                 stringsAsFactors = FALSE)
+      # Grab the CPU bets and sum the total outcomes
+      cpuTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == FALSE, ], 1, computeTotal),
+                              stringsAsFactors = FALSE)
+      # Update the data for bottomLeftPlot data
+      bottomPlotsData$data <- cbind(manualNumWins = bottomPlotsData$data[1, 1] + sum(manualTotals$outcome > 0),
+                             manualWinnings = bottomPlotsData$data[1, 2] + sum(manualTotals$outcome),
+                             manualNumBets = bottomPlotsData$data[1, 2] + length(manualTotals$outcome),
+                             cpuNumWins = bottomPlotsData$data[1, 4] + sum(cpuTotals$outcome > 0),
+                             cpuWinnings = bottomPlotsData$data[1, 5] + sum(cpuTotals$outcome),
+                             cpuNumWins = bottomPlotsData$data[1, 6] + length(cpuTotals$outcome))
 
-      # manualTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == TRUE, ], 1, computeTotal),
-      #                            stringsAsFactors = FALSE)
-      #
-      # cpuTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == FALSE, ], 1, computeTotal),
-      #                         stringsAsFactors = FALSE)
-      #
-      # leftPlot$data <- cbind(manualNumWins = leftPlot$data[1, 1] + sum(manualTotals$outcome > 0),
-      #                        manualWinnings = leftPlot$data[1, 2] + sum(manualTotals$outcome),
-      #                        cpuNumWins = leftPlot$data[1, 3] + sum(cpuTotals$outcome > 0),
-      #                        cpuWinnings = leftPlot$data[1, 4] + sum(cpuTotals$outcome))
+      #print(bottomPlotsData$data)
 
 
+      # Compute totals for the round
       totalsOverall <- data.frame(outcome = apply(tableOverall, 1, computeTotal),
                                   stringsAsFactors = FALSE)
-      #print(tableOverall)
-      #print(totalsOverall)
+      # Store the overall results
       completeList$data <- rbind(completeList$data,
                                  cbind(slots = apply(resultsTable$data, 1, combineSlots),
                                        resultsTable$data[, 10:ncol(resultsTable$data)],
                                        outcome = apply(resultsTable$data, 1, checkWin),
                                        winningSlot = roulette$winningSlot$slotLanded))
 
-
-      totalsList <- totalsOverall$outcome
     } else {
-      totalsList <- 0
+      totalsOverall <- data.frame(outcome = 0,
+                                  stringsAsFactors = FALSE)
+      totalsOverall$outcome <- 0
     }
 
     # update numBets
     currentBetNum <- outcomesList$data[nrow(outcomesList$data), 2]
     currentBalance <- outcomesList$data[nrow(outcomesList$data), 1]
-    newBalance <- sum(totalsList)
+    newBalance <- sum(totalsOverall$outcome)
     outcomesList$data <- rbind(outcomesList$data,
                                cbind(balance = currentBalance + as.numeric(newBalance),
                                      betNum = currentBetNum + 1))
@@ -313,6 +369,8 @@ function(input, output) {
 
   checkWin <- function(row) {
     # check for inside bets first row[10] -> row$type
+    # 1 2 3  4  5  6  7  8  9      10    11        12
+    # x y b1 b2 b3 b4 b5 b6 payOut type betAmount manualBet
     if (row[10] %in% c("Single", "Split", "Square Bet", "Line Bet", "Street Bet", "Trio Bet", "Top Line Bet")) {
       payout <- as.numeric(row[11]) * as.numeric(row[9])
       winnerFlag <- any(c(row[3:8]) == roulette$winningSlot$slotLanded, na.rm = TRUE)
