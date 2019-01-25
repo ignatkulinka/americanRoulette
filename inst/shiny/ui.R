@@ -44,6 +44,13 @@ fluidPage(
                       actionButton("bet3", "$50"),
                       actionButton("bet4", "$100"),
                       actionButton("bet5", "$250"),
+                      br(),
+                      h4("Chip Color"),
+                      selectInput("chipColor", "Choose chip color:",
+                                  choices = c("Royal Blue" = "royalblue4",
+                                              "Plum" = "plum3",
+                                              "Turquoise" = "turquoise",
+                                              "Yellow" = "yellow3")),
                       hr(),
                       ### Computer Assisted Betting
                       h4("Computer Assisted Betting"),

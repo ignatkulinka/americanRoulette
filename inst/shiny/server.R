@@ -1,9 +1,40 @@
 # americanRouletteV3 server file
 # Ignat Kulinka
 
-function(input, output) {
 
-# I. Bet Amount Selection -------------------------------------------------
+# I. Reactive Data Frames -------------------------------------------------
+
+selectedPoints <- reactiveValues(data = cbind(clickable[0, ],
+                                              betAmount = double(),
+                                              manualBet = logical()))
+
+roulette <- reactiveValues(winningSlot = NULL, history = NULL)
+
+resultsTable <- reactiveValues(data = cbind(clickable[0, ],
+                                            betAmount = double(),
+                                            manualBet = logical()))
+
+completeList <- reactiveValues(data = cbind(slots = numeric(),
+                                            #clickable[0, 9:ncol(clickable)],
+                                            betAmount = double(),
+                                            manualBet = logical(),
+                                            outcome = double(),
+                                            winningSlot = double()))
+
+outcomesList <- reactiveValues(data = cbind(balance = 0,
+                                            betNum = 0))
+
+bottomPlotsData <- reactiveValues(data = cbind(manualNumWins = 0,
+                                               manualWinnings = 0,
+                                               manualNumBets = 0,
+                                               cpuNumWins = 0,
+                                               cpuWinnings = 0,
+                                               cpuNumBets = 0))
+#chip <- reactiveValues(color = "")
+
+function(input, output, session) {
+
+# II. Bet Amount Selection -------------------------------------------------
   # Store the bet amount
   bet <- reactiveValues(amount = 10)
 
@@ -33,7 +64,7 @@ function(input, output) {
   })
 
 
-# II. Plots ---------------------------------------------------------------
+# III. Plots ---------------------------------------------------------------
   # Roulette table
   output$rTable <- renderPlot({
     rouletteTable <- ggplot() +
@@ -56,7 +87,7 @@ function(input, output) {
       scale_color_manual(values = colsTwo) +
       coord_equal() +
       theme_bw() +
-      #ditch_the_axes +
+      ditch_the_axes +
       # 1-3: white circles; 4: transparent
       #geom_circle(aes(x0=c(df$x,0.5, 3.5, columnBets$x, splitBets$x, dozenBets$x,
       # outsideBets$x, quadBets$x, lineBets$x, streetBets$x, trioBets$x, topLineBets$x), y0=c(df$y, 23.9, 23.9, columnBets$y,
@@ -71,11 +102,11 @@ function(input, output) {
                color = "white", angle = -90, size = 5) +
       annotate("text", x = rep(-4, 6), y = c(1, 5, 9, 13, 17, 21), label = c("19to36", "Odd", "Black", "Red", "Even", "1to18"), color = "white", angle = -90, size = 4) +
       # show all clickable points
-      geom_point(data = clickable, aes(x=x, y=y)) +
+      #geom_point(data = clickable, aes(x=x, y=y)) +
       geom_point(data = NULL, aes(x = selectedPoints$data$x, y = selectedPoints$data$y),
                  colour = "dimgray", size = 12) +
       geom_point(data = NULL, aes(x = selectedPoints$data$x, y = selectedPoints$data$y),
-                 colour = "royalblue4", size = 9) +
+                 colour = input$chipColor, size = 9) +
       annotate("text", x = selectedPoints$data$x, y = selectedPoints$data$y, label = selectedPoints$data$betAmount,
                color = "white", size = 4)
     rouletteTable
@@ -195,35 +226,6 @@ function(input, output) {
 
   })
 
-
-# III. Reactive Data Frames -----------------------------------------------
-
-  selectedPoints <- reactiveValues(data = cbind(clickable[0, ],
-                                                betAmount = double(),
-                                                manualBet = logical()))
-
-  roulette <- reactiveValues(winningSlot = NULL, history = NULL)
-
-  resultsTable <- reactiveValues(data = cbind(clickable[0, ],
-                                              betAmount = double(),
-                                              manualBet = logical()))
-
-  completeList <- reactiveValues(data = cbind(slots = numeric(),
-                                              #clickable[0, 9:ncol(clickable)],
-                                              betAmount = double(),
-                                              manualBet = logical(),
-                                              outcome = double(),
-                                              winningSlot = double()))
-
-  outcomesList <- reactiveValues(data = cbind(balance = 0,
-                                              betNum = 0))
-
-  bottomPlotsData <- reactiveValues(data = cbind(manualNumWins = 0,
-                                          manualWinnings = 0,
-                                          manualNumBets = 0,
-                                          cpuNumWins = 0,
-                                          cpuWinnings = 0,
-                                          cpuNumBets = 0))
 
 # IV. Event Observers -----------------------------------------------------
 

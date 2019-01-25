@@ -145,8 +145,8 @@ annotationLabels <- c(34, 35, 36,
 #  b1 - b6: the numbers included in the bet
 #  payOut: the payout for winning the bet
 #  type: name of the bet
-
-# A. Straight up / Single Bet (0 and 00 included): Bet on any single number
+# A. Inside Bets
+#  1. Straight up / Single Bet (0 and 00 included): Bet on any single number
 slotsToBets <- data.frame(x = c(rep(c(0, 2, 4), 12), 0.5, 3.5),
                           y = c(rep(seq(0, 22, 2), 1, each = 3), 23.9, 23.9),
                           b1 = c(34, 35, 36,
@@ -171,7 +171,7 @@ slotsToBets <- data.frame(x = c(rep(c(0, 2, 4), 12), 0.5, 3.5),
                           type = "Single",
                           stringsAsFactors = FALSE)
 
-# B. Split Bet: Bet on any two adjoining numbers vertical/horizontal
+#  2. Split Bet: Bet on any two adjoining numbers vertical/horizontal
 splitBets <- data.frame(x = c(rep(1, 12),
                               rep(3, 12),
                               rep(c(0, 2, 4), each = 11)),
@@ -195,22 +195,7 @@ splitBets <- data.frame(x = c(rep(1, 12),
                         type = "Split",
                         stringsAsFactors = FALSE)
 
-# C. Column Bets: Bet on all numbers in columns 1 - 3
-columnBets <- data.frame(x = seq(0,4,2),
-                         y = rep(-2,3),
-                         b1 = c("1st Column",
-                                "2nd Column",
-                                "3rd Column"),
-                         b2 = rep(NA, 3),
-                         b3 = rep(NA, 3),
-                         b4 = rep(NA, 3),
-                         b5 = rep(NA, 3),
-                         b6 = rep(NA, 3),
-                         payOut = rep(2,3),
-                         type = "Column Bet",
-                         stringsAsFactors = FALSE)
-
-# D. Square Bets: Bet on any 4 adjoining numbers in a block
+# 3. Square Bets: Bet on any 4 adjoining numbers in a block
 quadBets <- data.frame(x = c(rep(1, 11),
                              rep(3, 11)),
                        y = c(seq(1, 22, 2),
@@ -229,38 +214,55 @@ quadBets <- data.frame(x = c(rep(1, 11),
                        type = "Square Bet",
                        stringsAsFactors = FALSE)
 
-# C. Street Bets: Bet on any three horizontal numbers in a row
+# 4. Street Bets: Bet on any three horizontal numbers in a row
 streetBets <- data.frame(x = c(rep(-1, 12),
-                             rep(5, 12)),
-                       y = c(seq(0, 22, 2),
-                             seq(0, 22, 2)),
-                       b1 = rep(seq(34, 1, -3), 2),
-                       b2 = rep(seq(35, 2, -3), 2),
-                       b3 = rep(seq(36, 3, -3), 2),
-                       b4 = rep(NA, 24),
-                       b5 = rep(NA, 24),
-                       b6 = rep(NA, 24),
-                       payOut = rep(5, 24),
-                       type = "Street Bet",
+                               rep(5, 12)),
+                         y = c(seq(0, 22, 2),
+                               seq(0, 22, 2)),
+                         b1 = rep(seq(34, 1, -3), 2),
+                         b2 = rep(seq(35, 2, -3), 2),
+                         b3 = rep(seq(36, 3, -3), 2),
+                         b4 = rep(NA, 24),
+                         b5 = rep(NA, 24),
+                         b6 = rep(NA, 24),
+                         payOut = rep(5, 24),
+                         type = "Street Bet",
+                         stringsAsFactors = FALSE)
+
+# 5. Line Bets: Bet on any six numbers from two adjacent horizontal row
+lineBets <- data.frame(x = c(rep(-1, 11),
+                             rep(5, 11)),
+                       y = c(seq(1, 21, 2),
+                             seq(1, 21, 2)),
+                       b1 = rep(seq(31, 1, -3), 2),
+                       b2 = rep(seq(32, 2, -3), 2),
+                       b3 = rep(seq(33, 3, -3), 2),
+                       b4 = rep(seq(34, 4, -3), 2),
+                       b5 = rep(seq(35, 5, -3), 2),
+                       b6 = rep(seq(36, 6, -3), 2),
+                       payOut = rep(5, 22),
+                       type = "Line Bet",
                        stringsAsFactors = FALSE)
 
-# D. Line Bets: Bet on any six numbers from two adjacent horizontal row
-lineBets <- data.frame(x = c(rep(-1, 11),
-                               rep(5, 11)),
-                         y = c(seq(1, 21, 2),
-                               seq(1, 21, 2)),
-                         b1 = rep(seq(31, 1, -3), 2),
-                         b2 = rep(seq(32, 2, -3), 2),
-                         b3 = rep(seq(33, 3, -3), 2),
-                         b4 = rep(seq(34, 4, -3), 2),
-                         b5 = rep(seq(35, 5, -3), 2),
-                         b6 = rep(seq(36, 6, -3), 2),
-                         payOut = rep(5, 22),
-                         type = "Line Bet",
+
+# B. Outside Bets
+#  1. Column Bets: Bet on all numbers in columns 1 - 3
+columnBets <- data.frame(x = seq(0,4,2),
+                         y = rep(-2,3),
+                         b1 = c("1st Column",
+                                "2nd Column",
+                                "3rd Column"),
+                         b2 = rep(NA, 3),
+                         b3 = rep(NA, 3),
+                         b4 = rep(NA, 3),
+                         b5 = rep(NA, 3),
+                         b6 = rep(NA, 3),
+                         payOut = rep(2,3),
+                         type = "Column Bet",
                          stringsAsFactors = FALSE)
 
 
-# E. Dozen Bets: 1st through 3rd dozen bets
+#  2. Dozen Bets: 1st through 3rd dozen bets
 dozenBets <- data.frame(x = c(rep(-2,15)),
                         y = c(seq(0, 6, 1.5),
                               seq(8, 14, 1.5),
@@ -277,7 +279,7 @@ dozenBets <- data.frame(x = c(rep(-2,15)),
                         type = "Dozen Bet",
                         stringsAsFactors = FALSE)
 
-# F. Outside Bets: Low, High, Even, Odd, Red, Black
+#  3. Outside Bets: Low, High, Even, Odd, Red, Black
 outsideBets <- data.frame(x = rep(-4, 12),
                           y = c(0.3, 1.7,
                                 4.2, 5.7,
