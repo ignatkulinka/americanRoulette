@@ -55,7 +55,6 @@ function(input, output) {
       scale_fill_manual(values = cols) +
       scale_color_manual(values = colsTwo) +
       coord_equal() +
-      coord_fixed() +
       theme_bw() +
       #ditch_the_axes +
       # 1-3: white circles; 4: transparent
@@ -82,58 +81,55 @@ function(input, output) {
     rouletteTable
   }, width = 700, height = 700)
 
+  # B. Main Round Number vs Total Balance Plot
   output$mainPlot <- renderPlot({
-    # [,1]: balance [,2]: count
+    # Uses data from outcomesList$data ([,1]: balance [,2] round_number)
+    # Extract needed values from reactive data
+    # Y-axis
+    current_balance <- outcomesList$data[nrow(outcomesList$data), 1]
+    lower_y_bound <- round((min(outcomesList$data[, 1]) - 1) * 1.5)
+    upper_y_bound <- round((max(outcomesList$data[, 1]) + 1) * 1.5)
+    y_breaks <- seq(lower_y_bound, upper_y_bound)
 
-    print(paste("current balance:", outcomesList$data[nrow(outcomesList$data), 1]))
-    print(paste("current bet: ", outcomesList$data[nrow(outcomesList$data), 2]))
+    # X-axis
+    current_bet_num <- max(outcomesList$data[,2])
+    x_breaks <- seq(0, round(current_bet_num * 1.5))
 
-    print(paste(seq((min(outcomesList$data[, 1]) + 1) * 2, (max(outcomesList$data[, 1]) + 1) * 2)))
-    print(paste("len breaks:", length(seq((min(outcomesList$data[, 1]) + 1) * 2, (max(outcomesList$data[, 1]) + 1) * 2))))
-
-
-    # print((c(rep("A", length(seq((min(outcomesList$data[, 1]) + 1) * 2, outcomesList$data[-1,1]))),
-    #                outcomesList$data[-1,1],
-    #                rep("B", length(seq(outcomesList$data[-1,1], max(outcomesList$data[, 1]) + 1) * 2 )))))
-    # print(length(c(rep("A", length(seq((min(outcomesList$data[, 1]) + 1) * 2, outcomesList$data[-1,1]))),
-    #                outcomesList$data[-1,1],
-    #                rep("B", length(seq(outcomesList$data[-1,1], max(outcomesList$data[, 1]) + 1) * 2 )))))
-
-    # ggplot(data = NULL, aes(x = outcomesList$data[, 2], y = outcomesList$data[, 1])) +
-    #   geom_line() +
-    #   geom_point() +
-    #   labs(x = "Round Number", y = "Total Balance") +
-    #   scale_x_continuous(limits = c(0, round(max(outcomesList$data[,2]) * 1.5)),
-    #                      breaks = seq(0, round(max(outcomesList$data[,2]) * 1.5)),
-    #                      labels = c(rep("", max(outcomesList$data[,2])), max(outcomesList$data[,2]),
-    #                                 rep("", round(max(outcomesList$data[,2]) * 1.5) - max(outcomesList$data[,2])))) +
-    #   scale_y_continuous(limits = c((min(outcomesList$data[, 1]) + 1) * 2, (max(outcomesList$data[, 1]) + 1) * 2),
-    #                      breaks = seq((min(outcomesList$data[, 1]) + 1) * 2, (max(outcomesList$data[, 1]) + 1) * 2),
-    #                      labels = c(rep("", length(seq((min(outcomesList$data[, 1]) + 1) * 2, outcomesList$data[-1,1]))),
-    #                                 outcomesList$data[-1,1],
-    #                                 rep("", length(seq(outcomesList$data[-1,1], max(outcomesList$data[, 1]) + 1) * 2) - 1))) +
-    #   geom_hline(yintercept = outcomesList$data[-1,1], linetype = "dotted") +
-    #   geom_vline(xintercept = max(outcomesList$data[,2]), linetype = "dotted") +
-    #   theme(panel.grid.major = element_blank(),
-    #         panel.grid.minor = element_blank(),
-    #         panel.background = element_blank(),
-    #         axis.line = element_blank(),
-    #         axis.ticks.y.left = element_blank())
+    # Make the plot below
+    ggplot(data = NULL, aes(x = outcomesList$data[, 2], y = outcomesList$data[, 1])) +
+      geom_line() +
+      geom_point() +
+      scale_y_continuous(breaks = y_breaks,
+                         labels = ifelse(y_breaks %in% current_balance, current_balance, "")) +
+      labs(x = "Round Number", y = "Total Balance") +
+      scale_x_continuous(breaks = x_breaks,
+                         labels = ifelse(x_breaks %in% current_bet_num, current_bet_num, "")) +
+      geom_hline(yintercept = current_balance, linetype = "dotted") +
+      geom_vline(xintercept = max(outcomesList$data[,2]), linetype = "dotted") +
+      theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_blank(),
+        axis.ticks.y.left = element_blank(),
+        axis.ticks.x.bottom = element_blank(),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12))
   })
 
-  output$bottomLeftPlot <- renderPlot({
-    df <- data.frame(num = leftPlot$data[c(1, 3)], names = c("Manual", "CPU"))
-
-    ggplot(data = df, aes(x = names, y = num)) +
-      geom_bar(stat = "identity", width = 0.4) +
-      labs(x = "Bet Type", y = "Number of Bets Won") +
-      coord_cartesian(ylim = c(min(df$num) - 2, max(df$num) + 2)) +
-      theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.background = element_blank(),
-            axis.line = element_blank())
-
-  })
+  # output$bottomLeftPlot <- renderPlot({
+  #   df <- data.frame(num = leftPlot$data[c(1, 3)], names = c("Manual", "CPU"))
+  #
+  #   ggplot(data = df, aes(x = names, y = num)) +
+  #     geom_bar(stat = "identity", width = 0.4) +
+  #     labs(x = "Bet Type", y = "Number of Bets Won") +
+  #     coord_cartesian(ylim = c(min(df$num) - 2, max(df$num) + 2)) +
+  #     theme(panel.grid.major = element_blank(),
+  #           panel.grid.minor = element_blank(),
+  #           panel.background = element_blank(),
+  #           axis.line = element_blank())
+  #
+  # })
 
   output$midPlot <- renderPlot({
     df <- data.frame(x = as.character(roulette$history))
@@ -197,16 +193,16 @@ function(input, output) {
                                  manualBet = resultsTable$data$manualBet,
                                  stringsAsFactors = FALSE)
 
-      manualTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == TRUE, ], 1, computeTotal),
-                                 stringsAsFactors = FALSE)
-
-      cpuTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == FALSE, ], 1, computeTotal),
-                              stringsAsFactors = FALSE)
-
-      leftPlot$data <- cbind(manualNumWins = leftPlot$data[1, 1] + sum(manualTotals$outcome > 0),
-                             manualWinnings = leftPlot$data[1, 2] + sum(manualTotals$outcome),
-                             cpuNumWins = leftPlot$data[1, 3] + sum(cpuTotals$outcome > 0),
-                             cpuWinnings = leftPlot$data[1, 4] + sum(cpuTotals$outcome))
+      # manualTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == TRUE, ], 1, computeTotal),
+      #                            stringsAsFactors = FALSE)
+      #
+      # cpuTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == FALSE, ], 1, computeTotal),
+      #                         stringsAsFactors = FALSE)
+      #
+      # leftPlot$data <- cbind(manualNumWins = leftPlot$data[1, 1] + sum(manualTotals$outcome > 0),
+      #                        manualWinnings = leftPlot$data[1, 2] + sum(manualTotals$outcome),
+      #                        cpuNumWins = leftPlot$data[1, 3] + sum(cpuTotals$outcome > 0),
+      #                        cpuWinnings = leftPlot$data[1, 4] + sum(cpuTotals$outcome))
 
 
       totalsOverall <- data.frame(outcome = apply(tableOverall, 1, computeTotal),
@@ -215,7 +211,7 @@ function(input, output) {
       #print(totalsOverall)
       completeList$data <- rbind(completeList$data,
                                  cbind(slots = apply(resultsTable$data, 1, combineSlots),
-                                       resultsTable$data[,10:ncol(resultsTable$data)],
+                                       resultsTable$data[, 10:ncol(resultsTable$data)],
                                        outcome = apply(resultsTable$data, 1, checkWin),
                                        winningSlot = roulette$winningSlot$slotLanded))
 

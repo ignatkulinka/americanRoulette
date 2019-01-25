@@ -9,6 +9,22 @@ require(ggplot2)
 require(stringr)
 
 fluidPage(
+  # Busy pop-up!
+  tags$head(tags$style(type="text/css", "#loadmessage { position: fixed;
+                                                             top: 0px;
+                                                            left: 0px;
+                                                           width: 100%;
+                                                         padding: 0px 0px 0px 0px;
+                                                      text-align: center;
+                                                     font-weight: bold;
+                                                       font-size: 100%;
+                                                           color: #000000;
+                                                background-color: #ffffff;
+                                                         z-index: 105; } ")),
+  conditionalPanel(condition="$('html').hasClass('shiny-busy')",
+                   tags$div("Processing, please wait!", id="loadmessage")),
+
+
   # Application title
   headerPanel("American Roulette"),
 
@@ -64,27 +80,24 @@ fluidPage(
                       fluidRow(
                         column(12,
                                br(),
-                               h4("Total Balance vs. Number of Bets"),
+                               h4("Total Balance vs. Round Number"),
                                plotOutput("mainPlot", height = "250px"),
-                               fluidRow(
-                                 # column(4,
-                                 #        br(),
-                                 #        h4("Manual vs CPU Bets Won"),
-                                 #        plotOutput("leftPlot", width = "150px", height = "235px")),
-                                 column(12,
-                                        br(),
-                                        h4("Winning Slots Distribution"),
-                                        plotOutput("midPlot", height = "250px", width = "100%")),
-                                 fluidRow(
-                                   column(6,
-                                         br(),
-                                         h4("Manual vs CPU Bets Won"),
-                                         plotOutput("bottomLeftPlot", height = "180px", width = "100%")),
-                                   column(6,
-                                         br(),
-                                         h4("Bets Wons vs Lost"),
-                                         plotOutput("bottom", height = "180px", width = "100%"))))))
-             ),
+                               fluidRow(column(12,
+                                               br(),
+                                               h4("Winning Slots Distribution"),
+                                               plotOutput("midPlot", height = "250px", width = "100%"),
+                                               fluidRow(column(4,
+                                                               br(),
+                                                               h4("Manual vs CPU Amount Won"),
+                                                               plotOutput("bottomLeftPlot", height = "180px", width = "100%")),
+                                                        column(4,
+                                                               br(),
+                                                               h4("Manual vs CPU Bets Won"),
+                                                               plotOutput("bottomMidPlot", height = "180px", width = "100%")),
+                                                        column(4,
+                                                               br(),
+                                                               h4("Bets Won vs Lost"),
+                                                               plotOutput("bottomRightPlot", height = "180px", width = "100%")))))))),
              tabPanel("Data Output",
                       br(),
                       fluidRow(
@@ -98,5 +111,5 @@ fluidPage(
                         )
                       )
              )
-           )) #,tags$style(type="text/css", ".recalculating {opacity: 1.0;}")
+           ))
   ))

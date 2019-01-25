@@ -4,6 +4,7 @@
 
 # I. bettingTable Setup ---------------------------------------------------
 # Setup of the bettingTable, dataframe that keeps track of slots on the table
+require(ggplot2)
 
 slotNum <- c(0, "00" , c(1:36))
 
