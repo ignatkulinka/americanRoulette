@@ -1,4 +1,4 @@
-# americanRouletteV3 UI file
+# americanRouletteV4 UI file
 # Ignat Kulinka
 
 
@@ -48,15 +48,16 @@ fluidPage(
                       br(),
                       h4("Chip Color"),
                       selectizeInput("chipColor", "Choose chip color:",
-                                  choices = str_to_title(colors()),
-                                  selected = "Navy"),
+                                     choices = tolower(colors()[grepl("^[^0-9]*$", colors())]),
+                                     selected = "navy"),
                       hr(),
                       ### Computer Assisted Betting
                       h4("Computer Assisted Betting"),
                       sliderInput("numBets", "Number of Random Bets:", min = 1, max = 35, value = 1),
-                      actionButton("random", "Place random bet(s)")
-                      #br(),
-                      #br(),
+                      actionButton("random", "Place random bet(s)"),
+                      br(),
+                      br(),
+                      actionButton("session_status", "Print session_vals")
                       # COMING SOON
                       #strong("Other computer generated bets")
              ),
@@ -115,8 +116,49 @@ fluidPage(
                         fluidRow(
                           column(12,
                                  DTOutput("dataOutput"))
+                        ))),
+             tabPanel("Chat",
+                      bootstrapPage(
+                        # We'll add some custom CSS styling -- totally optional
+                        includeCSS("shinychat.css"),
+
+                        # And custom JavaScript -- just to send a message when a user hits "enter"
+                        # and automatically scroll the chat window for us. Totally optional.
+                        includeScript("sendOnEnter.js"),
+
+                        div(
+                          # Setup custom Bootstrap elements here to define a new layout
+                          class = "container-fluid",
+                          div(class = "row-fluid",
+
+                              # Create the header
+                              div(class="span6", style="padding: 10px 0px;",
+                                  h3("Chat"))),
+                          # The main panel
+                          div(
+                            class = "row-fluid",
+                            mainPanel(
+                              # Create a spot for a dynamic UI containing the chat contents.
+                              uiOutput("chat"),
+
+                              # Create the bottom bar to allow users to chat.
+                              fluidRow(
+                                div(class="span10",
+                                    textInput("entry", "")
+                                ),
+                                actionButton("send", "Send")
+                              )
+                            ),
+                            # The right sidebar
+                            sidebarPanel(
+                              # Let the user define his/her own ID
+                              textInput("user", "Your User ID:", value=""),
+                              tags$hr(),
+                              h5("Connected Users"),
+                              # Create a spot for a dynamic UI containing the list of users.
+                              uiOutput("userList")
+                            )
+                          )
                         )
                       )
-             )
-           ))
-  ))
+             )))))
