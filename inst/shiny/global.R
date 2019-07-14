@@ -1,4 +1,4 @@
-# americanRouletteV3 global file
+# americanRouletteV4 global file
 # Ignat Kulinka
 
 
@@ -22,7 +22,7 @@ low <- c(rep(0,2), rep(1, 18), rep(0, 18))
 high <- c(rep(0,2), rep(0, 18), rep(1, 18))
 
 snakeBet <- c(rep(0,2),
-              rep(c(1,0,0,0),2),
+              rep(c(1,0,0,0), 2),
               1, 0, 0,
               rep(c(1,0), 3),
               0,
@@ -56,7 +56,7 @@ df$z <- c(rep(c(1, 2), 3), 2, 2, 1, 1,
 
 # B. Pentagons for the 0 and 00 slots on the table
 zeroPentagon <- data.frame(z = rep(3,5),
-                           x = c(-1, -1, .5, 2, 2),
+                           x = c(-1, -1, 0.5, 2, 2),
                            y = c(23, 24, 25, 24, 23))
 
 doubleZeroPentagon <- data.frame(z = rep(3,5),
@@ -66,39 +66,39 @@ doubleZeroPentagon <- data.frame(z = rep(3,5),
 # C. Outside bets bounding boxes
 thirdTwelveSlots <- data.frame(x = c(-1, -1, -3, -3),
                                y = c(-1, 7, 7, -1),
-                               z = rep(3,4))
+                               z = rep(3, 4))
 
 secondTwelveSlots <- data.frame(x = c(-1, -1, -3, -3),
                                 y = c(7, 15, 15, 7),
-                                z = rep(3,4))
+                                z = rep(3, 4))
 
 firstTwelveSlots <- data.frame(x = c(-1, -1, -3, -3),
                                y = c(15, 23, 23, 15),
-                               z = rep(3,4))
+                               z = rep(3, 4))
 
 ninteenThirtysixSlots <- data.frame(x = c(-3, -3, -5, -5),
                                     y = c(-1, 3, 3, -1),
-                                    z = rep(3,4))
+                                    z = rep(3, 4))
 
 oddSlots <- data.frame(x = c(-3, -3, -5, -5),
                        y = c(3, 7, 7, 3),
-                       z = rep(3,4))
+                       z = rep(3, 4))
 
 blackSlots <- data.frame(x = c(-3, -3, -5, -5),
                          y = c(7, 11, 11, 7),
-                         z = rep(2,4))
+                         z = rep(2, 4))
 
 redSlots <- data.frame(x = c(-3, -3, -5, -5),
                        y = c(11, 15, 15, 11),
-                       z = rep(1,4))
+                       z = rep(1, 4))
 
 evenSlots <- data.frame(x = c(-3, -3, -5, -5),
                         y = c(15, 19, 19, 15),
-                        z = rep(3,4))
+                        z = rep(3, 4))
 
 oneToEighteenSlots <- data.frame(x = c(-3, -3, -5, -5),
                                  y = c(19, 23, 23, 19),
-                                 z = rep(3,4))
+                                 z = rep(3, 4))
 
 twoToOne1 <- data.frame(x = c(-1, -1, 1, 1),
                         y = c(-1, -3, -3, -1),
@@ -359,9 +359,30 @@ uniqueBets <- clickable[!duplicated(clickable[3:10]),]
 
 # V. Colors and Helpers for ggplot2 ---------------------------------------
 
+# A. Chip text color based on chip color
+contrast_color <- function(color, verbose = FALSE){
+
+  # 1. Expect a color within colors()
+  # if(!(tolower(color) %in% colors()[grepl("^[^0-9]*$", colors())])) {
+  #   if(verbose){
+  #     print("Input color not valid! Using white by default")
+  #   }
+  #   return("white")
+  # }
+
+  # 2. Calculate color luminance
+  wt <- c(0.2126, 0.7152, 0.0722)
+  luminance <- colSums(col2rgb(color) * wt) / 255
+
+  # 3. Determine font color best suited for the chip color
+  return(ifelse(luminance > 0.5, "black", "white"))
+}
+
+# B. Colors for ggplot2 roulette table
 cols <- c("1" = "red", "2" = "black", "3" = "darkgreen", "4" = "white")
 colsTwo <- c("1" = "white", "2" = "white", "3" = "white", "4" = rgb(0,0,0,0))
 
+# C. Theme elements for ggplot2 roulette table
 ditch_the_axes <- theme(
   axis.text = element_blank(),
   axis.line = element_blank(),

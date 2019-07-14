@@ -1,8 +1,30 @@
-# americanRouletteV3 server file
+# americanRouletteV4 server file
 # Ignat Kulinka
 
 
 # I. Reactive Data Frames -------------------------------------------------
+# Note: reactive values outside of the server function are shared among all users
+
+# Store chat history, user names and colors
+shared_vals <- reactiveValues(chat = NULL, users = NULL, chip_color = NULL,
+                              all_colors = tolower(colors()[grepl("^[^0-9]*$", colors())]),
+                              taken_colors = NULL)
+
+# Restore chat log from pervious session
+if (file.exists("chat.RDS")){
+  shared_vals$chat <- readRDS("chat.RDS")
+} else {
+  shared_vals$chat <- "Welcome to American Roulette!"
+}
+
+# Get the prefix for the line to be added to the chat window. Usually a newline
+# character unless it's the first line.
+linePrefix <- function(){
+  if (is.null(isolate(shared_vals$chat))){
+    return("")
+  }
+  return("<br />")
+}
 
 selectedPoints <- reactiveValues(data = cbind(clickable[0, ],
                                               betAmount = double(),
@@ -30,12 +52,153 @@ bottomPlotsData <- reactiveValues(data = cbind(manualNumWins = 0,
                                                cpuNumWins = 0,
                                                cpuWinnings = 0,
                                                cpuNumBets = 0))
-#chip <- reactiveValues(color = "")
 
 function(input, output, session) {
+  # Note: reactive values inside the server function are specific to the particular session
+  session_vals <- reactiveValues(user_name = "", user_color = NULL)
+
+  # Track session initialization to assign a user_name and user_color to uninitialized sessions
+  init_user_name <- FALSE
+  init_user_color <- FALSE
+
+  # When a session is ended, remove the user and note that they have left
+  session$onSessionEnded(function() {
+    isolate({
+      # User name operations/announcements
+      shared_vals$users <- shared_vals$users[shared_vals$users != session_vals$user_name]
+      shared_vals$chat <- c(shared_vals$chat, paste0(linePrefix(), tags$span(class = "user-exit",
+                                                                             session_vals$user_name,
+                                                                             "left the roulette table.")))
+      # User color operations
+      shared_vals$all_colors <- c(shared_vals$all_colors, session_vals$user_color)
+      shared_vals$taken_colors <- shared_vals$taken_colors[shared_vals$taken_colors != session_vals$user_color]
+
+    })
+  })
+
+  # Observer to handle changes to the user_name
+  observe({
+    # We want a reactive dependency on this variable, so we'll just list it here.
+    input$user
+
+    if (!init_user_name){
+      # Seed initial user_name
+      session_vals$user_name <- paste0("User", round(runif(1, 10000, 99999)))
+      isolate({
+        shared_vals$chat <<- c(shared_vals$chat, paste0(linePrefix(),
+                                                        tags$span(class = "user-enter",
+                                                                  session_vals$user_name,
+                                                                  "entered the room.")))
+      })
+      init_user_name <<- TRUE
+
+    } else{
+      # A previous user_name was already given
+      isolate({
+        if (input$user == session_vals$user_name || input$user == ""){
+          return()
+        }
+
+        # Updating user_name
+        # First, remove the old one
+        shared_vals$users <- shared_vals$users[shared_vals$users != session_vals$user_name]
+
+        # Note the change in the chat log
+        shared_vals$chat <<- c(shared_vals$chat, paste0(linePrefix(),
+                                                        tags$span(class="user-change",
+                                                                  session_vals$user_name,
+                                                                  " changed user ID to ",
+                                                                 paste0(input$user, "."))))
+
+        # Now update with the new one
+        session_vals$user_name <- input$user
+      })
+    }
+    # Add this user to the global list of users
+    isolate(shared_vals$users <- c(shared_vals$users, session_vals$user_name))
+  })
+
+  # Keep the user_name updated with whatever sanitized/assigned user_name we have
+  observe({
+    updateTextInput(session, "user",
+                    value = session_vals$user_name)
+  })
+
+  # Observer to handle changes to the chip color
+  observe({
+    input$chipColor
+
+    # G. For uninitialized session - set random color
+    if (!init_user_color){
+      # 1. Set a random color at first
+      session_vals$user_color <- sample(shared_vals$all_colors, 1)
+      # 2. Initialize the session
+      init_user_color <<- TRUE
+
+    } else {
+      isolate({
+        # H. Check that the color input is valid and allowed
+        print(input$chipColor)
+        if (input$chipColor == session_vals$user_color || input$chipColor == "" || !(input$chipColor %in% shared_vals$all_colors)){
+          print("Please choose a unique and allowed color")
+          return()
+        }
+        # I. Put the old color to free colors and take it out of the taken colors
+        shared_vals$all_colors <- c(shared_vals$all_colors, session_vals$user_color)
+        shared_vals$taken_colors <- shared_vals$taken_colors[shared_vals$taken_colors != session_vals$user_color]
+
+        # J. Update user color with the new choice
+        session_vals$user_color <- input$chipColor
+      })
+    }
+    # K. Add the new color to the global list for taken colors and out of avialable colors
+    isolate(shared_vals$taken_colors <- c(shared_vals$taken_colors, session_vals$user_color))
+    isolate(shared_vals$all_colors <- shared_vals$all_colors[shared_vals$all_colors != session_vals$user_color])
+
+  })
+
+  # Keep the list of connected users updated
+  output$userList <- renderUI({
+    tagList(tags$ul(lapply(shared_vals$users, function(user){
+      return(tags$li(user))
+    })))
+  })
+
+  # Listen for input$send changes (i.e. when the button is clicked)
+  observe({
+    if(input$send < 1){
+      # The code must be initializing, b/c the button hasn't been clicked yet.
+      return()
+    }
+    isolate({
+      # Add the current entry to the chat log.
+      shared_vals$chat <<- c(shared_vals$chat,
+                      paste0(linePrefix(),
+                             tags$span(class = "user_name",
+                                       tags$abbr(title = Sys.time(), session_vals$user_name)
+                             ),
+                             ": ",
+                             tagList(input$entry)))
+    })
+    # Clear out the text entry field.
+    updateTextInput(session, "entry", value = "")
+  })
+
+  # Dynamically create the UI for the chat window.
+  output$chat <- renderUI({
+    if (length(shared_vals$chat) > 500){
+      # Too long, use only the most recent 500 lines
+      shared_vals$chat <- shared_vals$chat[(length(shared_vals$chat)-500):(length(shared_vals$chat))]
+    }
+    # Save the chat object so we can restore it later if needed.
+    saveRDS(shared_vals$chat, "chat.Rds")
+
+    # Pass the chat log through as HTML
+    HTML(shared_vals$chat)
+  })
 
 # II. Bet Amount Selection -------------------------------------------------
-  # Store the bet amount
+
   bet <- reactiveValues(amount = 10)
 
   # Choose the bet amount
@@ -43,6 +206,7 @@ function(input, output, session) {
     print("Bet changed to $10")
     bet$amount <- 10
   })
+
   observeEvent(input$bet2, {
     print("Bet changed to $25")
     bet$amount <- 25
@@ -85,9 +249,6 @@ function(input, output, session) {
       geom_polygon(data = doubleZeroPentagon, aes(x = x, y = y, fill = factor(z), color = factor(z)), size = 1.5) +
       scale_fill_manual(values = cols) +
       scale_color_manual(values = colsTwo) +
-      coord_equal() +
-      theme_bw() +
-      ditch_the_axes +
       # 1-3: white circles; 4: transparent
       #geom_circle(aes(x0=c(df$x,0.5, 3.5, columnBets$x, splitBets$x, dozenBets$x,
       # outsideBets$x, quadBets$x, lineBets$x, streetBets$x, trioBets$x, topLineBets$x), y0=c(df$y, 23.9, 23.9, columnBets$y,
@@ -100,21 +261,39 @@ function(input, output, session) {
                size = 3.5, color = "white") +
       annotate("text", x = rep(-2, 3), y = c(3, 11, 19), label = c("3rd 12", "2nd 12", "1st 12"),
                color = "white", angle = -90, size = 5) +
-      annotate("text", x = rep(-4, 6), y = c(1, 5, 9, 13, 17, 21), label = c("19to36", "Odd", "Black", "Red", "Even", "1to18"), color = "white", angle = -90, size = 4) +
+      annotate("text", x = rep(-4, 6), y = c(1, 5, 9, 13, 17, 21),
+               label = c("19to36", "Odd", "Black", "Red", "Even", "1to18"), color = "white", angle = -90, size = 4) +
       # show all clickable points
-      #geom_point(data = clickable, aes(x=x, y=y)) +
+      geom_point(data = clickable, aes(x=x, y=y)) +
+      # Bets are drawn on the table here
       geom_point(data = NULL, aes(x = selectedPoints$data$x, y = selectedPoints$data$y),
                  colour = "dimgray", size = 12) +
       geom_point(data = NULL, aes(x = selectedPoints$data$x, y = selectedPoints$data$y),
-                 colour = input$chipColor, size = 9) +
-      annotate("text", x = selectedPoints$data$x, y = selectedPoints$data$y, label = selectedPoints$data$betAmount,
-               color = "white", size = 4)
-    rouletteTable
+                 colour = selectedPoints$data$user_color, size = 9) +
+      # annotate("text", x = selectedPoints$data$x, y = selectedPoints$data$y, label = selectedPoints$data$betAmount,
+      #          color = contrast_color(selectedPoints$data$user_color), size = 4) +
+      coord_equal() +
+      theme_bw() +
+      ditch_the_axes
+
+    print(selectedPoints$data)
+    print(nrow(selectedPoints$data))
+
+    if (nrow(selectedPoints$data) > 0) {
+      rouletteTable <- rouletteTable +
+        annotate("text", x = selectedPoints$data$x, y = selectedPoints$data$y, label = selectedPoints$data$betAmount,
+                 color = contrast_color(selectedPoints$data$user_color), size = 4)
+
+      rouletteTable
+    } else {
+      rouletteTable
+
+    }
   }, width = 700, height = 700)
 
   # B. Main Round Number vs Total Balance Plot
   output$mainPlot <- renderPlot({
-    # Uses data from outcomesList$data ([,1]: balance [,2] round_number)
+    # Uses data from outcomesList$data ([,1]: balance [,2]: round_number)
     # Extract needed values from reactive data
     # Y-axis
     current_balance <- outcomesList$data[nrow(outcomesList$data), 1]
@@ -154,10 +333,11 @@ function(input, output, session) {
     # manualNumWins manualWinnings manualNumBets cpuNumWins cpuWinings cpuNumBets
     df <- data.frame(num = bottomPlotsData$data[c(2, 5)], names = c("Manual", "CPU"))
 
+
     ggplot(data = df, aes(x = names, y = num)) +
       geom_bar(stat = "identity", width = 0.4) +
       labs(x = "", y = "Amount Won") +
-      geom_text(aes(label = df$num), position = position_dodge(width = 0.4), vjust = 1.2) +
+      #geom_text(aes(label = df$num)) +
       coord_cartesian(ylim = c(min(df$num) * 1.1, max(df$num) * 1.1)) +
       theme(panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
@@ -228,6 +408,11 @@ function(input, output, session) {
 
 
 # IV. Event Observers -----------------------------------------------------
+
+  observeEvent(input$session_status, {
+    print(session_vals$user_name)
+    print(session_vals$user_color)
+  })
 
   observeEvent(input$spin, {
     # save the bets for results tables
@@ -301,7 +486,8 @@ function(input, output, session) {
 
     if (nrow(click) != 0) {
       # make a new bet!
-      newBet <- cbind(click, betAmount = currentBet, manualBet = TRUE)
+      newBet <- cbind(click, betAmount = currentBet, manualBet = TRUE,
+                      user_name = session_vals$user_name, user_color = session_vals$user_color)
       if (nrow(selectedPoints$data) == 0) {
         # first bet being placed in this case, just add the bet and return the list
         selectedPoints$data <- rbind(selectedPoints$data, newBet)
@@ -310,14 +496,14 @@ function(input, output, session) {
       } else {
         # iterate through all the bets already placed and compare to the newBet
         for (i in 1:nrow(selectedPoints$data)) {
-          # 1st: check if the bet type is the same -> same bet this is mostly for outside bets
-          if (all(newBet[1:2] == selectedPoints$data[i, 1:2])) {
-            # check if the coordinates are the same -> same bet this is mostly for inside bets
+          # 1st: check if the bet location and user_name is the same -> same bet this is mostly for outside bets
+          if (all(newBet[1:2] == selectedPoints$data[i, 1:2]) && (newBet[13] == selectedPoints$data[i, 13])) {
+            # check if the coordinates are the same -> same bet : this is mostly for inside bets
             selectedPoints$data[i, 11] <- selectedPoints$data[i, 11] + currentBet
             return()
           }
           # check if the bet type is the same -> same bet : this is mostly for outside bets
-          if (newBet[3] == selectedPoints$data[i, 3]) {
+          if ((newBet[3] == selectedPoints$data[i, 3]) && (newBet[13] == selectedPoints$data[i, 13])) {
             selectedPoints$data[i, 11] <- selectedPoints$data[i, 11] + currentBet
             return()
           }
@@ -333,7 +519,9 @@ function(input, output, session) {
     if (numBets > 0) {
       randomBet <- cbind(uniqueBets[sample(nrow(uniqueBets), numBets), ],
                          betAmount = sample(c(10, 25, 50, 100, 250), numBets, replace = TRUE),
-                         manualBet = FALSE)
+                         manualBet = FALSE,
+                         user_name = "CPU",
+                         user_color = session_vals$user_color)
       if (nrow(selectedPoints$data) == 0) {
         # first bet being placed in this case, just add the bet and return the list
         selectedPoints$data <- rbind(selectedPoints$data, randomBet)
@@ -550,19 +738,15 @@ function(input, output, session) {
     }
   })
 
-  # Downloadable csv
  output$downloadData <- downloadHandler(
     filename = function(){
-      paste("American Roulette", Sys.Date(), ".csv", sep = "")
+      paste("American Roulette ", Sys.Date(), ".csv", sep = "")
       },
     content = function(file) {
       print(completeList$data)
       write.csv(completeList$data, file, row.names = FALSE)
-    }
-  )
+    })
 }
-
-
 
 
 
