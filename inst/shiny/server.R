@@ -138,7 +138,7 @@ function(input, output, session) {
     } else {
       isolate({
         # H. Check that the color input is valid and allowed
-        print(input$chipColor)
+        #print(input$chipColor)
         if (input$chipColor == session_vals$user_color || input$chipColor == "" || !(input$chipColor %in% shared_vals$all_colors)){
           print("Please choose a unique and allowed color")
           return()
@@ -264,7 +264,7 @@ function(input, output, session) {
       annotate("text", x = rep(-4, 6), y = c(1, 5, 9, 13, 17, 21),
                label = c("19to36", "Odd", "Black", "Red", "Even", "1to18"), color = "white", angle = -90, size = 4) +
       # show all clickable points
-      geom_point(data = clickable, aes(x=x, y=y)) +
+      #geom_point(data = clickable, aes(x=x, y=y)) +
       # Bets are drawn on the table here
       geom_point(data = NULL, aes(x = selectedPoints$data$x, y = selectedPoints$data$y),
                  colour = "dimgray", size = 12) +
@@ -276,8 +276,8 @@ function(input, output, session) {
       theme_bw() +
       ditch_the_axes
 
-    print(selectedPoints$data)
-    print(nrow(selectedPoints$data))
+    #print(selectedPoints$data)
+    #print(nrow(selectedPoints$data))
 
     if (nrow(selectedPoints$data) > 0) {
       rouletteTable <- rouletteTable +
@@ -371,7 +371,7 @@ function(input, output, session) {
     df <- data.frame(num = c(bottomPlotsData$data[1] + bottomPlotsData$data[4],
                              bottomPlotsData$data[3] + bottomPlotsData$data[6] - (bottomPlotsData$data[1] + bottomPlotsData$data[4])),
                      names = c("Won", "Lost"))
-    print(as.vector(df$num))
+    #print(as.vector(df$num))
     ggplot(data = df, aes(x = names, y = num)) +
       geom_bar(stat = "identity", width = 0.4) +
       geom_text(aes(label = df$num), position = position_dodge(width = 0.4), vjust = -0.25) +
@@ -414,73 +414,9 @@ function(input, output, session) {
     print(session_vals$user_color)
   })
 
-  observeEvent(input$spin, {
-    # save the bets for results tables
-    resultsTable$data <- selectedPoints$data
-
-    # clear the betting table
-    selectedPoints$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
-
-    # spin the roulette
-    roulette$winningSlot <- roulette()
-    roulette$history <- c(roulette$history, roulette$winningSlot$slotLanded)
-
-    if (nrow(resultsTable$data) > 0) {
-      tableOverall <- data.frame(slots = apply(resultsTable$data, 1, combineSlots),
-                                 betAmount = resultsTable$data$betAmount,
-                                 outcome = apply(resultsTable$data, 1, checkWin),
-                                 manualBet = resultsTable$data$manualBet,
-                                 stringsAsFactors = FALSE)
-      # Grab the manual bets and sum the bet outcomes
-      manualTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == TRUE, ], 1, computeTotal),
-                                 stringsAsFactors = FALSE)
-      # Grab the CPU bets and sum the total outcomes
-      cpuTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == FALSE, ], 1, computeTotal),
-                              stringsAsFactors = FALSE)
-      # Update the data for bottomLeftPlot data
-      bottomPlotsData$data <- cbind(manualNumWins = bottomPlotsData$data[1, 1] + sum(manualTotals$outcome > 0),
-                             manualWinnings = bottomPlotsData$data[1, 2] + sum(manualTotals$outcome),
-                             manualNumBets = bottomPlotsData$data[1, 2] + length(manualTotals$outcome),
-                             cpuNumWins = bottomPlotsData$data[1, 4] + sum(cpuTotals$outcome > 0),
-                             cpuWinnings = bottomPlotsData$data[1, 5] + sum(cpuTotals$outcome),
-                             cpuNumWins = bottomPlotsData$data[1, 6] + length(cpuTotals$outcome))
-
-      #print(bottomPlotsData$data)
-
-
-      # Compute totals for the round
-      totalsOverall <- data.frame(outcome = apply(tableOverall, 1, computeTotal),
-                                  stringsAsFactors = FALSE)
-      # Store the overall results
-      completeList$data <- rbind(completeList$data,
-                                 cbind(slots = apply(resultsTable$data, 1, combineSlots),
-                                       resultsTable$data[, 10:ncol(resultsTable$data)],
-                                       outcome = apply(resultsTable$data, 1, checkWin),
-                                       winningSlot = roulette$winningSlot$slotLanded))
-
-    } else {
-      totalsOverall <- data.frame(outcome = 0,
-                                  stringsAsFactors = FALSE)
-      totalsOverall$outcome <- 0
-    }
-
-    # update numBets
-    currentBetNum <- outcomesList$data[nrow(outcomesList$data), 2]
-    currentBalance <- outcomesList$data[nrow(outcomesList$data), 1]
-    newBalance <- sum(totalsOverall$outcome)
-    outcomesList$data <- rbind(outcomesList$data,
-                               cbind(balance = currentBalance + as.numeric(newBalance),
-                                     betNum = currentBetNum + 1))
-
-  })
-
-  observeEvent(input$reset, {
-    selectedPoints$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
-  })
-
   observeEvent(input$plot_click, {
     currentBet <- isolate(bet$amount)
-    resultsTable$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
+    # resultsTable$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
     roulette$winningSlot <- NULL
     click <- nearPoints(clickable, input$plot_click, threshold = 20, maxpoints = 1)
 
@@ -553,6 +489,73 @@ function(input, output, session) {
       }
     }
   })
+
+  observeEvent(input$spin, {
+    # save the bets for results tables
+    resultsTable$data <- selectedPoints$data
+
+    # clear the betting table
+    selectedPoints$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
+
+    # spin the roulette
+    roulette$winningSlot <- roulette()
+    roulette$history <- c(roulette$history, roulette$winningSlot$slotLanded)
+
+    if (nrow(resultsTable$data) > 0) {
+      tableOverall <- data.frame(slots = apply(resultsTable$data, 1, combineSlots),
+                                 betAmount = resultsTable$data$betAmount,
+                                 outcome = apply(resultsTable$data, 1, checkWin),
+                                 manualBet = resultsTable$data$manualBet,
+                                 stringsAsFactors = FALSE)
+      # Grab the manual bets and sum the bet outcomes
+      manualTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == TRUE, ], 1, computeTotal),
+                                 stringsAsFactors = FALSE)
+      # Grab the CPU bets and sum the total outcomes
+      cpuTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == FALSE, ], 1, computeTotal),
+                              stringsAsFactors = FALSE)
+      # Update the data for bottomLeftPlot data
+      bottomPlotsData$data <- cbind(manualNumWins = bottomPlotsData$data[1, 1] + sum(manualTotals$outcome > 0),
+                             manualWinnings = bottomPlotsData$data[1, 2] + sum(manualTotals$outcome),
+                             manualNumBets = bottomPlotsData$data[1, 2] + length(manualTotals$outcome),
+                             cpuNumWins = bottomPlotsData$data[1, 4] + sum(cpuTotals$outcome > 0),
+                             cpuWinnings = bottomPlotsData$data[1, 5] + sum(cpuTotals$outcome),
+                             cpuNumWins = bottomPlotsData$data[1, 6] + length(cpuTotals$outcome))
+
+      #print(bottomPlotsData$data)
+
+
+      # Compute totals for the round
+      totalsOverall <- data.frame(outcome = apply(tableOverall, 1, computeTotal),
+                                  stringsAsFactors = FALSE)
+      # Store the overall results
+      completeList$data <- rbind(completeList$data,
+                                 cbind(slots = apply(resultsTable$data, 1, combineSlots),
+                                       resultsTable$data[, 10:ncol(resultsTable$data)],
+                                       outcome = apply(resultsTable$data, 1, checkWin),
+                                       winningSlot = roulette$winningSlot$slotLanded))
+      #print("Complte List:")
+      #print(completeList$data)
+
+    } else {
+      totalsOverall <- data.frame(outcome = 0,
+                                  stringsAsFactors = FALSE)
+      totalsOverall$outcome <- 0
+    }
+
+    # update numBets
+    currentBetNum <- outcomesList$data[nrow(outcomesList$data), 2]
+    currentBalance <- outcomesList$data[nrow(outcomesList$data), 1]
+    newBalance <- sum(totalsOverall$outcome)
+    outcomesList$data <- rbind(outcomesList$data,
+                               cbind(balance = currentBalance + as.numeric(newBalance),
+                                     betNum = currentBetNum + 1))
+
+  })
+
+  observeEvent(input$reset, {
+    selectedPoints$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
+  })
+
 
 
 # V. Helper Functions -----------------------------------------------------
@@ -685,7 +688,7 @@ function(input, output, session) {
 
   output$dataOutput <- DT::renderDT({
     DT::datatable(completeList$data, rownames = FALSE,
-              colnames = c("Slots", "Bet Amount", "Manual Bet", "Outcome", "Winning Slot"),
+             # colnames = c("Slots", "Bet Amount", "Manual Bet", "Outcome", "Winning Slot"),
               options = list(pageLength = 10, sDom = "<\"top\">rt<\"bottom\">ip",
                              language = list(zeroRecords = "Completed bets are listed here")))
   })
