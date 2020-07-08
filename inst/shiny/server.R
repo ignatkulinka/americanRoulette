@@ -410,46 +410,89 @@ function(input, output, session) {
 # IV. Event Observers -----------------------------------------------------
 
   observeEvent(input$session_status, {
-    print(session_vals$user_name)
-    print(session_vals$user_color)
+  	print(session_vals$user_name)
+  	print(session_vals$user_color)
   })
+
+  # observeEvent(input$plot_click, {
+  #   currentBet <- isolate(bet$amount)
+  #   # resultsTable$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
+  #   roulette$winningSlot <- NULL
+  #   click <- nearPoints(clickable, input$plot_click, threshold = 20, maxpoints = 1)
+  # 
+  #   if (nrow(click) != 0) {
+  #     # make a new bet!
+  #     newBet <- cbind(click, betAmount = currentBet, manualBet = TRUE,
+  #                     user_name = session_vals$user_name, user_color = session_vals$user_color)
+  #     if (nrow(selectedPoints$data) == 0) {
+  #       # first bet being placed in this case, just add the bet and return the list
+  #       selectedPoints$data <- rbind(selectedPoints$data, newBet)
+  #       return()
+  # 
+  #     } else {
+  #     	print(selectedPoints$data)
+  #     	print(newBet)
+  #       # iterate through all the bets already placed and compare to the newBet
+  #       for (i in 1:nrow(selectedPoints$data)) {
+  #         # 1st: check if the bet location and user_name is the same -> same bet this is mostly for outside bets
+  #         if (all(newBet[1:2] == selectedPoints$data[i, 1:2]) && (newBet[13] == selectedPoints$data[i, 13])) {
+  #           # check if the coordinates are the same -> same bet : this is mostly for inside bets
+  #           selectedPoints$data[i, 11] <- selectedPoints$data[i, 11] + currentBet
+  #           return()
+  #         }
+  #         # check if the bet type is the same -> same bet : this is mostly for outside bets
+  #         if ((newBet[3] == selectedPoints$data[i, 3]) && (newBet[13] == selectedPoints$data[i, 13])) {
+  #           selectedPoints$data[i, 11] <- selectedPoints$data[i, 11] + currentBet
+  #           return()
+  #         }
+  #       }
+  #       selectedPoints$data <- rbind(selectedPoints$data, newBet)
+  #       
+  #       return()
+  #     }
+  #   }
+  # })
 
   observeEvent(input$plot_click, {
-    currentBet <- isolate(bet$amount)
-    # resultsTable$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
-    roulette$winningSlot <- NULL
-    click <- nearPoints(clickable, input$plot_click, threshold = 20, maxpoints = 1)
-
-    if (nrow(click) != 0) {
-      # make a new bet!
-      newBet <- cbind(click, betAmount = currentBet, manualBet = TRUE,
-                      user_name = session_vals$user_name, user_color = session_vals$user_color)
-      if (nrow(selectedPoints$data) == 0) {
-        # first bet being placed in this case, just add the bet and return the list
-        selectedPoints$data <- rbind(selectedPoints$data, newBet)
-        return()
-
-      } else {
-        # iterate through all the bets already placed and compare to the newBet
-        for (i in 1:nrow(selectedPoints$data)) {
-          # 1st: check if the bet location and user_name is the same -> same bet this is mostly for outside bets
-          if (all(newBet[1:2] == selectedPoints$data[i, 1:2]) && (newBet[13] == selectedPoints$data[i, 13])) {
-            # check if the coordinates are the same -> same bet : this is mostly for inside bets
-            selectedPoints$data[i, 11] <- selectedPoints$data[i, 11] + currentBet
-            return()
-          }
-          # check if the bet type is the same -> same bet : this is mostly for outside bets
-          if ((newBet[3] == selectedPoints$data[i, 3]) && (newBet[13] == selectedPoints$data[i, 13])) {
-            selectedPoints$data[i, 11] <- selectedPoints$data[i, 11] + currentBet
-            return()
-          }
-        }
-        selectedPoints$data <- rbind(selectedPoints$data, newBet)
-        return()
-      }
-    }
-  })
-
+  	currentBet <- isolate(bet$amount)
+  	# resultsTable$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
+  	roulette$winningSlot <- NULL
+  	click <- nearPoints(clickable, input$plot_click, threshold = 20, maxpoints = 1)
+  	
+  	if (nrow(click) != 0) {
+  		# make a new bet!
+  		newBet <- cbind(click, betAmount = currentBet, manualBet = TRUE,
+  																		user_name = session_vals$user_name, user_color = session_vals$user_color)
+  		
+  		print(newBet)
+  		print(selectedPoints$data)
+  		
+  		# add new bet 
+  		selectedPoints$data <- rbind(selectedPoints$data, newBet)
+  		
+  		# combine like-bets - all fields
+  		selectedPoints$data <- selectedPoints$data %>%
+  			group_by_at(setdiff(names(selectedPoints$data), "betAmount")) %>%
+  			summarize(betAmount = sum(betAmount)) %>% 
+  			as.data.frame()
+  		
+  		# combine same outside bets - b1  
+  		selectedPoints$data <- selectedPoints$data %>%
+  			group_by_at(setdiff(names(selectedPoints$data), c("betAmount", "x", "y"))) %>%
+  			summarize(betAmount = sum(betAmount), x = tail(x, 1), y = tail(y, 1)) %>%
+  			as.data.table()
+  		
+    # update x and y to the last pressed for outside bets
+  		newBet_helper <- as.data.table(newBet)
+  		selectedPoints$data[newBet_helper, on=.(b1 = b1, user_name = user_name), x := i.x]
+  		selectedPoints$data[newBet_helper, on=.(b1 = b1, user_name = user_name), y := i.y]
+  		
+  		# don't forget to go back to data frame! 
+  		selectedPoints$data <- as.data.frame(selectedPoints$data)
+  		  		
+  		return()
+  	}})
+  
   observeEvent(input$random, {
     numBets <- isolate(input$numBets)
     if (numBets > 0) {
