@@ -26,36 +26,39 @@ linePrefix <- function(){
   return("<br />")
 }
 
-selectedPoints <- reactiveValues(data = cbind(clickable[0, ],
+
+
+function(input, output, session) {
+  # Private games by default
+  selectedPoints <- reactiveValues(data = cbind(clickable[0, ],
+                                                betAmount = double(),
+                                                manualBet = logical()))
+
+  roulette <- reactiveValues(winningSlot = NULL, history = NULL)
+
+  resultsTable <- reactiveValues(data = cbind(clickable[0, ],
                                               betAmount = double(),
                                               manualBet = logical()))
 
-roulette <- reactiveValues(winningSlot = NULL, history = NULL)
+  completeList <- reactiveValues(data = cbind(slots = numeric(),
+                                              #clickable[0, 9:ncol(clickable)],
+                                              betAmount = double(),
+                                              manualBet = logical(),
+                                              outcome = double(),
+                                              winningSlot = double()))
 
-resultsTable <- reactiveValues(data = cbind(clickable[0, ],
-                                            betAmount = double(),
-                                            manualBet = logical()))
+  outcomesList <- reactiveValues(data = cbind(balance = 0,
+                                              betNum = 0))
 
-completeList <- reactiveValues(data = cbind(slots = numeric(),
-                                            #clickable[0, 9:ncol(clickable)],
-                                            betAmount = double(),
-                                            manualBet = logical(),
-                                            outcome = double(),
-                                            winningSlot = double()))
+  bottomPlotsData <- reactiveValues(data = cbind(manualNumWins = 0,
+                                                 manualWinnings = 0,
+                                                 manualNumBets = 0,
+                                                 cpuNumWins = 0,
+                                                 cpuWinnings = 0,
+                                                 cpuNumBets = 0))
 
-outcomesList <- reactiveValues(data = cbind(balance = 0,
-                                            betNum = 0))
-
-bottomPlotsData <- reactiveValues(data = cbind(manualNumWins = 0,
-                                               manualWinnings = 0,
-                                               manualNumBets = 0,
-                                               cpuNumWins = 0,
-                                               cpuWinnings = 0,
-                                               cpuNumBets = 0))
-
-function(input, output, session) {
   # Note: reactive values inside the server function are specific to the particular session
-  session_vals <- reactiveValues(user_name = "", user_color = NULL)
+  session_vals <- reactiveValues(user_name = "", user_color = NULL, all_user_names = "", user_score = 0)
 
   # Track session initialization to assign a user_name and user_color to uninitialized sessions
   init_user_name <- FALSE
@@ -112,6 +115,11 @@ function(input, output, session) {
 
         # Now update with the new one
         session_vals$user_name <- input$user
+
+        # Save the old one
+        session_vals$all_user_names <- c(session_vals$all_user_names, input$user)
+        session_vals$all_user_names <- session_vals$all_user_names[session_vals$all_user_names != ""]
+
       })
     }
     # Add this user to the global list of users
@@ -409,90 +417,49 @@ function(input, output, session) {
 
 # IV. Event Observers -----------------------------------------------------
 
+  # A. Print session values
   observeEvent(input$session_status, {
   	print(session_vals$user_name)
   	print(session_vals$user_color)
+  	print(session_vals$all_user_names)
   })
 
-  # observeEvent(input$plot_click, {
-  #   currentBet <- isolate(bet$amount)
-  #   # resultsTable$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
-  #   roulette$winningSlot <- NULL
-  #   click <- nearPoints(clickable, input$plot_click, threshold = 20, maxpoints = 1)
-  # 
-  #   if (nrow(click) != 0) {
-  #     # make a new bet!
-  #     newBet <- cbind(click, betAmount = currentBet, manualBet = TRUE,
-  #                     user_name = session_vals$user_name, user_color = session_vals$user_color)
-  #     if (nrow(selectedPoints$data) == 0) {
-  #       # first bet being placed in this case, just add the bet and return the list
-  #       selectedPoints$data <- rbind(selectedPoints$data, newBet)
-  #       return()
-  # 
-  #     } else {
-  #     	print(selectedPoints$data)
-  #     	print(newBet)
-  #       # iterate through all the bets already placed and compare to the newBet
-  #       for (i in 1:nrow(selectedPoints$data)) {
-  #         # 1st: check if the bet location and user_name is the same -> same bet this is mostly for outside bets
-  #         if (all(newBet[1:2] == selectedPoints$data[i, 1:2]) && (newBet[13] == selectedPoints$data[i, 13])) {
-  #           # check if the coordinates are the same -> same bet : this is mostly for inside bets
-  #           selectedPoints$data[i, 11] <- selectedPoints$data[i, 11] + currentBet
-  #           return()
-  #         }
-  #         # check if the bet type is the same -> same bet : this is mostly for outside bets
-  #         if ((newBet[3] == selectedPoints$data[i, 3]) && (newBet[13] == selectedPoints$data[i, 13])) {
-  #           selectedPoints$data[i, 11] <- selectedPoints$data[i, 11] + currentBet
-  #           return()
-  #         }
-  #       }
-  #       selectedPoints$data <- rbind(selectedPoints$data, newBet)
-  #       
-  #       return()
-  #     }
-  #   }
-  # })
-
+  # B. Take manual bets
   observeEvent(input$plot_click, {
-  	currentBet <- isolate(bet$amount)
-  	# resultsTable$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
-  	roulette$winningSlot <- NULL
-  	click <- nearPoints(clickable, input$plot_click, threshold = 20, maxpoints = 1)
-  	
-  	if (nrow(click) != 0) {
-  		# make a new bet!
-  		newBet <- cbind(click, betAmount = currentBet, manualBet = TRUE,
-  																		user_name = session_vals$user_name, user_color = session_vals$user_color)
-  		
-  		print(newBet)
-  		print(selectedPoints$data)
-  		
-  		# add new bet 
-  		selectedPoints$data <- rbind(selectedPoints$data, newBet)
-  		
-  		# combine like-bets - all fields
-  		selectedPoints$data <- selectedPoints$data %>%
-  			group_by_at(setdiff(names(selectedPoints$data), "betAmount")) %>%
-  			summarize(betAmount = sum(betAmount)) %>% 
-  			as.data.frame()
-  		
-  		# combine same outside bets - b1  
-  		selectedPoints$data <- selectedPoints$data %>%
-  			group_by_at(setdiff(names(selectedPoints$data), c("betAmount", "x", "y"))) %>%
-  			summarize(betAmount = sum(betAmount), x = tail(x, 1), y = tail(y, 1)) %>%
-  			as.data.table()
-  		
-    # update x and y to the last pressed for outside bets
-  		newBet_helper <- as.data.table(newBet)
-  		selectedPoints$data[newBet_helper, on=.(b1 = b1, user_name = user_name), x := i.x]
-  		selectedPoints$data[newBet_helper, on=.(b1 = b1, user_name = user_name), y := i.y]
-  		
-  		# don't forget to go back to data frame! 
-  		selectedPoints$data <- as.data.frame(selectedPoints$data)
-  		  		
-  		return()
-  	}})
-  
+    currentBet <- isolate(bet$amount)
+    # resultsTable$data <- cbind(clickable[0, ], betAmount = double(), manualBet = logical())
+    roulette$winningSlot <- NULL
+    click <- nearPoints(clickable, input$plot_click, threshold = 20, maxpoints = 1)
+
+    if (nrow(click) != 0) {
+      # make a new bet!
+      newBet <- cbind(click, betAmount = currentBet, manualBet = TRUE,
+                      user_name = session_vals$user_name, user_color = session_vals$user_color)
+
+
+      # add new bet
+      selectedPoints$data <- rbind(selectedPoints$data, newBet)
+
+      # combine same bets
+      selectedPoints$data <- selectedPoints$data %>%
+        group_by_at(setdiff(names(selectedPoints$data), c("betAmount", "x", "y", "user_color", "user_name"))) %>%
+        summarize(betAmount = sum(betAmount), x = tail(x, 1), y = tail(y, 1), user_color = last(user_color), user_name = last(user_name)) %>%
+        as.data.table()
+
+      # update x and y to the last pressed for outside bets
+      newBet_helper <- as.data.table(newBet)
+      setkeyv(newBet_helper, setdiff(names(newBet_helper), c("betAmount", "x", "y", "user_color", "user_name")))
+      setkeyv(selectedPoints$data, setdiff(names(selectedPoints$data), c("betAmount", "x", "y", "user_color", "user_name")))
+      selectedPoints$data[newBet_helper, x := i.x]
+      selectedPoints$data[newBet_helper, y := i.y]
+
+      # don't forget to go back to data frame!
+      selectedPoints$data <- as.data.frame(selectedPoints$data)
+
+      return()
+    }})
+
+  # C. Take CPU-assisted bets
   observeEvent(input$random, {
     numBets <- isolate(input$numBets)
     if (numBets > 0) {
@@ -501,38 +468,30 @@ function(input, output, session) {
                          manualBet = FALSE,
                          user_name = "CPU",
                          user_color = session_vals$user_color)
-      if (nrow(selectedPoints$data) == 0) {
-        # first bet being placed in this case, just add the bet and return the list
-        selectedPoints$data <- rbind(selectedPoints$data, randomBet)
-        return()
-      } else {
-        # iterate through all the bets already placed and compare to the newBet
-        for (i in 1:nrow(randomBet)) {
-          betOver <- FALSE
-          for (j in 1:nrow(selectedPoints$data)) {
-            # 1st: check if the bet type is the same -> same bet this is mostly for outside bets
-            if (all(randomBet[i, 1:2] == selectedPoints$data[j, 1:2])) {
-              # check if the coordinates are the same -> same bet this is mostly for inside bets
-              selectedPoints$data[j, 11] <- selectedPoints$data[j, 11] + randomBet[i, 11]
-              betOver <- TRUE
-              break
-            }
+            # add new bet
+      selectedPoints$data <- rbind(selectedPoints$data, randomBet)
 
-            if (randomBet[i, 3] == selectedPoints$data[j, 3]) {
-              selectedPoints$data[j, 11] <- selectedPoints$data[j, 11] + randomBet[i, 11]
-              betOver <- TRUE
-              break
-            }
+      # combine same bets
+      selectedPoints$data <- selectedPoints$data %>%
+        group_by_at(setdiff(names(selectedPoints$data), c("betAmount", "x", "y", "user_color", "user_name"))) %>%
+        summarize(betAmount = sum(betAmount), x = tail(x, 1), y = tail(y, 1), user_color = last(user_color), user_name = last(user_name)) %>%
+        as.data.table()
 
-          }
-          if (!betOver) {
-            selectedPoints$data <- rbind(selectedPoints$data, randomBet[i, ])
-          }
-        }
-      }
+      # update x and y to the last pressed for outside bets
+      randomBet_helper <- as.data.table(randomBet)
+      setkeyv(randomBet_helper, setdiff(names(randomBet_helper), c("betAmount", "x", "y", "user_color", "user_name")))
+      setkeyv(selectedPoints$data, setdiff(names(selectedPoints$data), c("betAmount", "x", "y", "user_color", "user_name")))
+      selectedPoints$data[randomBet_helper, x := i.x]
+      selectedPoints$data[randomBet_helper, y := i.y]
+
+      # don't forget to go back to data frame!
+      selectedPoints$data <- as.data.frame(selectedPoints$data)
+
+      return()
     }
   })
 
+  # D. Spin the wheel
   observeEvent(input$spin, {
     # save the bets for results tables
     resultsTable$data <- selectedPoints$data
@@ -542,14 +501,22 @@ function(input, output, session) {
 
     # spin the roulette
     roulette$winningSlot <- roulette()
+
+    # Save spin results
     roulette$history <- c(roulette$history, roulette$winningSlot$slotLanded)
 
+    # Review the bets and pay out
     if (nrow(resultsTable$data) > 0) {
       tableOverall <- data.frame(slots = apply(resultsTable$data, 1, combineSlots),
                                  betAmount = resultsTable$data$betAmount,
                                  outcome = apply(resultsTable$data, 1, checkWin),
                                  manualBet = resultsTable$data$manualBet,
                                  stringsAsFactors = FALSE)
+      print("results table")
+      print(resultsTable$data)
+      print("table_overall")
+      print(tableOverall)
+
       # Grab the manual bets and sum the bet outcomes
       manualTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == TRUE, ], 1, computeTotal),
                                  stringsAsFactors = FALSE)
@@ -683,25 +650,39 @@ function(input, output, session) {
   }
 
   combineSlots <- function(row) {
-    betList = c(row[3])
-    index = 3
+    # Take the betting columns out
+    row <- row[paste0("b", 1:6)]
 
-    while (!is.na(row[index])) {
-      if (index > 8) {
-        break
-      }
-      index = index + 1
-    }
+    # Make a nice text for the bet
+    betList <- str_trim(str_replace_all(paste0(ifelse(is.na(row), "", row), collapse = ", "), "[\\, ]{3,}", ""))
 
-    if (index == 4) {
-      return(betList)
-    } else {
-      for (i in 4:(index - 1)) {
-        betList = paste(betList, row[i], sep = ", ")
-      }
-      return(betList)
-    }
+    return(betList)
   }
+
+  # combineSlots <- function(row) {
+  #   # take the betting columns out
+  #   row <- row[paste0("b", 1:6)]
+  #
+  #   str_trim(str_replace_all(paste0(ifelse(is.na(clickable[1, paste0("b", 1:6)]), "", clickable[1, paste0("b", 1:6)]), collapse = ", "), "\\,", ""))
+  #   betList = c(row["b1"])
+  #   index = 1
+  #
+  #   while (!is.na(row[index])) {
+  #     if (index > 5) {
+  #       break
+  #     }
+  #     index = index + 1
+  #   }
+  #
+  #   if (index == 1) {
+  #     return(betList)
+  #   } else {
+  #     for (i in 2:(index - 1)) {
+  #       betList = paste(betList, row[i], sep = ", ")
+  #     }
+  #     return(betList)
+  #   }
+  # }
 
 
 # VI. Outputs for UI ------------------------------------------------------
