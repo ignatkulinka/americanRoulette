@@ -583,7 +583,11 @@ function(input, output, session) {
     # x y b1 b2 b3 b4 b5 b6 payOut type betAmount manualBet
     if (row["type"] %in% c("Single", "Split", "Square Bet", "Line Bet", "Street Bet", "Trio Bet", "Top Line Bet")) {
       payout <- as.numeric(row["betAmount"]) * as.numeric(row["payOut"])
+<<<<<<< HEAD
       winnerFlag <- any(c(row[paste0("b", 1:6)]) == roulette$winningSlot$slotLanded, na.rm = TRUE)
+=======
+      winnerFlag <- any(c(row[3:8]) == roulette$winningSlot$slotLanded, na.rm = TRUE)
+>>>>>>> 73cbc3cc2d788178dab2b6655dafe45915c5c820
       if (winnerFlag) {
         return(paste("won: $", payout, sep = ""))
       } else {
@@ -593,15 +597,23 @@ function(input, output, session) {
       # outside bets
       payout <- as.numeric(row["betAmount"]) * as.numeric(row["payOut"])
       if (row["type"] == "Column Bet") {
+<<<<<<< HEAD
         if (substr(row["b1"], 1, 1) == roulette$winningSlot$column) {
+=======
+        if (substr(row[3], 1, 1) == roulette$winningSlot$column) {
+>>>>>>> 73cbc3cc2d788178dab2b6655dafe45915c5c820
           return(paste("won: $", payout, sep = ""))
         } else {
           return(paste("lost: $", row["betAmount"], sep = ""))
         }
       } else if (row["type"] == "Dozen Bet") {
+<<<<<<< HEAD
         print("check")
         print(roulette$winningSlot$dozen)
         if (substr(row["b1"], 1, 1) == roulette$winningSlot$dozen) {
+=======
+        if (substr(row[3], 1, 1) == roulette$winningSlot$dozen) {
+>>>>>>> 73cbc3cc2d788178dab2b6655dafe45915c5c820
           return(paste("won: $", payout, sep = ""))
         } else {
           return(paste("lost: $", row["betAmount"], sep = ""))
