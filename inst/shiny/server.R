@@ -518,11 +518,18 @@ function(input, output, session) {
       print(tableOverall)
 
       # Grab the manual bets and sum the bet outcomes
-      manualTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == TRUE, ], 1, computeTotal),
-                                 stringsAsFactors = FALSE)
-      # Grab the CPU bets and sum the total outcomes
-      cpuTotals <- data.frame(outcome = apply(tableOverall[tableOverall$manualBet == FALSE, ], 1, computeTotal),
-                              stringsAsFactors = FALSE)
+      manualTotals <- ifelse(nrow(tableOverall[tableOverall$manualBet == TRUE, ]) > 0,
+                             data.frame(outcome = apply(tableOverall[tableOverall$manualBet == TRUE, ], 1, computeTotal),
+                                        stringsAsFactors = FALSE),
+                             data.frame(outcome = NULL,
+                                        stringsAsFactors = FALSE))
+
+            # Grab the CPU bets and sum the total outcomes
+      cpuTotals <- ifelse(nrow(tableOverall[tableOverall$manualBet == FALSE, ]) > 0,
+                          data.frame(outcome = apply(tableOverall[tableOverall$manualBet == FALSE, ], 1, computeTotal),
+                                     stringsAsFactors = FALSE),
+                          data.frame(outcome = NULL,
+                                     stringsAsFactors = FALSE))
       # Update the data for bottomLeftPlot data
       bottomPlotsData$data <- cbind(manualNumWins = bottomPlotsData$data[1, 1] + sum(manualTotals$outcome > 0),
                              manualWinnings = bottomPlotsData$data[1, 2] + sum(manualTotals$outcome),
@@ -574,64 +581,66 @@ function(input, output, session) {
     # check for inside bets first row[10] -> row$type
     # 1 2 3  4  5  6  7  8  9      10    11        12
     # x y b1 b2 b3 b4 b5 b6 payOut type betAmount manualBet
-    if (row[10] %in% c("Single", "Split", "Square Bet", "Line Bet", "Street Bet", "Trio Bet", "Top Line Bet")) {
-      payout <- as.numeric(row[11]) * as.numeric(row[9])
-      winnerFlag <- any(c(row[3:8]) == roulette$winningSlot$slotLanded, na.rm = TRUE)
+    if (row["type"] %in% c("Single", "Split", "Square Bet", "Line Bet", "Street Bet", "Trio Bet", "Top Line Bet")) {
+      payout <- as.numeric(row["betAmount"]) * as.numeric(row["payOut"])
+      winnerFlag <- any(c(row[paste0("b", 1:6)]) == roulette$winningSlot$slotLanded, na.rm = TRUE)
       if (winnerFlag) {
         return(paste("won: $", payout, sep = ""))
       } else {
-        return(paste("lost: $", row[11], sep = ""))
+        return(paste("lost: $", row["betAmount"], sep = ""))
       }
-    } else if (row[10] %in% c("Column Bet", "Dozen Bet", "High", "Low", "Even", "Odd", "Red", "Black")) {
+    } else if (row["type"] %in% c("Column Bet", "Dozen Bet", "High", "Low", "Even", "Odd", "Red", "Black")) {
       # outside bets
-      payout <- as.numeric(row[11]) * as.numeric(row[9])
-      if (row[10] == "Column Bet") {
-        if (substr(row[3], 1, 1) == roulette$winningSlot$column) {
+      payout <- as.numeric(row["betAmount"]) * as.numeric(row["payOut"])
+      if (row["type"] == "Column Bet") {
+        if (substr(row["b1"], 1, 1) == roulette$winningSlot$column) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Dozen Bet") {
-        if (substr(row[3], 1, 1) == roulette$winningSlot$dozen) {
+      } else if (row["type"] == "Dozen Bet") {
+        print("check")
+        print(roulette$winningSlot$dozen)
+        if (substr(row["b1"], 1, 1) == roulette$winningSlot$dozen) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "High") {
+      } else if (row["type"] == "High") {
         if (roulette$winningSlot$high) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Low") {
+      } else if (row["type"] == "Low") {
         if (roulette$winningSlot$low) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Even") {
+      } else if (row["type"] == "Even") {
         if (roulette$winningSlot$even) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Odd") {
+      } else if (row["type"] == "Odd") {
         if (roulette$winningSlot$odd) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Red") {
+      } else if (row["type"] == "Red") {
         if (roulette$winningSlot$color == 1) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Black") {
+      } else if (row["type"] == "Black") {
         if (roulette$winningSlot$color == 2) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
       } else {
         return("Unknown outside bet")
@@ -642,10 +651,12 @@ function(input, output, session) {
   }
 
   computeTotal <- function(row) {
-    if (substr(row[3], 1, 1) == "l") {
-      return(-1 * as.numeric(row[2]))
+    # check  for empty table
+
+    if (substr(row["outcome"], 1, 1) == "l") {
+      return(-1 * as.numeric(row["betAmount"]))
     } else {
-      return(as.numeric(str_extract(row[3], "(?<=won: \\$)\\d*")))
+      return(as.numeric(str_extract(row["outcome"], "(?<=won: \\$)\\d*")))
     }
   }
 
@@ -659,30 +670,6 @@ function(input, output, session) {
     return(betList)
   }
 
-  # combineSlots <- function(row) {
-  #   # take the betting columns out
-  #   row <- row[paste0("b", 1:6)]
-  #
-  #   str_trim(str_replace_all(paste0(ifelse(is.na(clickable[1, paste0("b", 1:6)]), "", clickable[1, paste0("b", 1:6)]), collapse = ", "), "\\,", ""))
-  #   betList = c(row["b1"])
-  #   index = 1
-  #
-  #   while (!is.na(row[index])) {
-  #     if (index > 5) {
-  #       break
-  #     }
-  #     index = index + 1
-  #   }
-  #
-  #   if (index == 1) {
-  #     return(betList)
-  #   } else {
-  #     for (i in 2:(index - 1)) {
-  #       betList = paste(betList, row[i], sep = ", ")
-  #     }
-  #     return(betList)
-  #   }
-  # }
 
 
 # VI. Outputs for UI ------------------------------------------------------
@@ -696,14 +683,19 @@ function(input, output, session) {
   })
 
   output$result <- DT::renderDT({
+
+
     # no bets placed before rolling the roulette
-    if (nrow(resultsTable$data) == 0) {
+    if (nrow(resultsTable$data) == 0 | is.null(roulette$winningSlot)) {
       return(invisible(NULL))
     } else {
+      print("results table last")
+      print(resultsTable$data)
       table <- data.frame(slots = apply(resultsTable$data, 1, combineSlots),
                           betAmount = resultsTable$data$betAmount,
                           outcome = apply(resultsTable$data, 1, checkWin),
                           stringsAsFactors = FALSE)
+      print(table)
       DT::datatable(table, colnames = c("Slots", "Bet Amount", "Outcome"),
                 rownames = FALSE, options = list(pageLength = 5, sDom = "<\"top\">rt<\"bottom\">ip"))
     }
@@ -718,20 +710,26 @@ function(input, output, session) {
   })
 
   output$total <- renderText({
-    if (nrow(resultsTable$data) == 0) {
-      return(invisible(NULL))
-    } else {
-      table <- data.frame(slots = apply(resultsTable$data, 1, combineSlots),
-                          betAmount = resultsTable$data$betAmount,
-                          outcome = apply(resultsTable$data, 1, checkWin),
-                          stringsAsFactors = FALSE)
+    print("table")
+    print(nrow(resultsTable$data))
+  if (nrow(resultsTable$data) == 0 | is.null(roulette$winningSlot)) {
+    return(invisible(NULL))
+  } else {
+    table <- data.frame(slots = apply(resultsTable$data, 1, combineSlots),
+                        betAmount = resultsTable$data$betAmount,
+                        outcome = apply(resultsTable$data, 1, checkWin),
+                        stringsAsFactors = FALSE)
 
-      totals <- data.frame(outcome = apply(table, 1, computeTotal),
-                           stringsAsFactors = FALSE)
+    print("table")
+    print(table)
+    totals <- data.frame(outcome = apply(table, 1, computeTotal),
+                         stringsAsFactors = FALSE)
 
-      balance <- sum(totals$outcome)
-      paste("Total for this round: ", balance, "$", sep = "")
-    }
+    print("totals")
+    print(totals)
+    balance <- sum(totals$outcome)
+    paste("Total for this round: ", balance, "$", sep = "")
+  }
   })
 
   output$viewManual <- DT::renderDT({
