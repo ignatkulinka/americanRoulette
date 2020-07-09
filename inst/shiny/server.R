@@ -574,64 +574,64 @@ function(input, output, session) {
     # check for inside bets first row[10] -> row$type
     # 1 2 3  4  5  6  7  8  9      10    11        12
     # x y b1 b2 b3 b4 b5 b6 payOut type betAmount manualBet
-    if (row[10] %in% c("Single", "Split", "Square Bet", "Line Bet", "Street Bet", "Trio Bet", "Top Line Bet")) {
-      payout <- as.numeric(row[11]) * as.numeric(row[9])
+    if (row["type"] %in% c("Single", "Split", "Square Bet", "Line Bet", "Street Bet", "Trio Bet", "Top Line Bet")) {
+      payout <- as.numeric(row["betAmount"]) * as.numeric(row["payOut"])
       winnerFlag <- any(c(row[3:8]) == roulette$winningSlot$slotLanded, na.rm = TRUE)
       if (winnerFlag) {
         return(paste("won: $", payout, sep = ""))
       } else {
-        return(paste("lost: $", row[11], sep = ""))
+        return(paste("lost: $", row["betAmount"], sep = ""))
       }
-    } else if (row[10] %in% c("Column Bet", "Dozen Bet", "High", "Low", "Even", "Odd", "Red", "Black")) {
+    } else if (row["type"] %in% c("Column Bet", "Dozen Bet", "High", "Low", "Even", "Odd", "Red", "Black")) {
       # outside bets
-      payout <- as.numeric(row[11]) * as.numeric(row[9])
-      if (row[10] == "Column Bet") {
+      payout <- as.numeric(row["betAmount"]) * as.numeric(row["payOut"])
+      if (row["type"] == "Column Bet") {
         if (substr(row[3], 1, 1) == roulette$winningSlot$column) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Dozen Bet") {
+      } else if (row["type"] == "Dozen Bet") {
         if (substr(row[3], 1, 1) == roulette$winningSlot$dozen) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "High") {
+      } else if (row["type"] == "High") {
         if (roulette$winningSlot$high) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Low") {
+      } else if (row["type"] == "Low") {
         if (roulette$winningSlot$low) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Even") {
+      } else if (row["type"] == "Even") {
         if (roulette$winningSlot$even) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Odd") {
+      } else if (row["type"] == "Odd") {
         if (roulette$winningSlot$odd) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Red") {
+      } else if (row["type"] == "Red") {
         if (roulette$winningSlot$color == 1) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
-      } else if (row[10] == "Black") {
+      } else if (row["type"] == "Black") {
         if (roulette$winningSlot$color == 2) {
           return(paste("won: $", payout, sep = ""))
         } else {
-          return(paste("lost: $", row[11], sep = ""))
+          return(paste("lost: $", row["betAmount"], sep = ""))
         }
       } else {
         return("Unknown outside bet")
