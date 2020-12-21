@@ -7,6 +7,8 @@ require(DT)
 require(shiny)
 require(ggplot2)
 require(stringr)
+require(dplyr)
+require(data.table)
 
 fluidPage(
   # Busy pop-up!

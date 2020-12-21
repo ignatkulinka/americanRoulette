@@ -339,7 +339,7 @@ function(input, output, session) {
     # Plot amount won by CPU vs Manual
     # Data cols:
     # manualNumWins manualWinnings manualNumBets cpuNumWins cpuWinings cpuNumBets
-    df <- data.frame(num = bottomPlotsData$data[c(2, 5)], names = c("Manual", "CPU"))
+    df <- data.frame(num = bottomPlotsData$data[c("manualWinnings", "cpuWinnings")], names = c("Manual", "CPU"))
 
 
     ggplot(data = df, aes(x = names, y = num)) +
@@ -358,7 +358,7 @@ function(input, output, session) {
 
   output$bottomMidPlot <- renderPlot({
     # Plot the number of bets won by CPU vs Manual
-    df <- data.frame(num = bottomPlotsData$data[c(1, 4)], names = c("Manual", "CPU"))
+    df <- data.frame(num = bottomPlotsData$data[c("manualNumWins", "cpuNumWins")], names = c("Manual", "CPU"))
 
     ggplot(data = df, aes(x = names, y = num)) +
       geom_bar(stat = "identity", width = 0.4) +
@@ -376,17 +376,19 @@ function(input, output, session) {
 
   output$bottomRightPlot <- renderPlot({
     # Plot the overall bets won vs list (CPU and Manual combined)
-    df <- data.frame(num = c(bottomPlotsData$data[1] + bottomPlotsData$data[4],
-                             bottomPlotsData$data[3] + bottomPlotsData$data[6] - (bottomPlotsData$data[1] + bottomPlotsData$data[4])),
+    df <- data.frame(num = c(bottomPlotsData$data["manualNumWins"] + bottomPlotsData$data["cpuNumWins"],
+                             bottomPlotsData$data["manualNumBets"] + bottomPlotsData$data[6] - (bottomPlotsData$data["manualNumWins"] + bottomPlotsData$data["cpuNumWins"])),
                      names = c("Won", "Lost"))
+
+    print(df)
     #print(as.vector(df$num))
     ggplot(data = df, aes(x = names, y = num)) +
       geom_bar(stat = "identity", width = 0.4) +
       geom_text(aes(label = df$num), position = position_dodge(width = 0.4), vjust = -0.25) +
       labs(x = "", y = "Number of Bets") +
-      scale_y_continuous(limits = c(0, max(df$num) + 2),
-                         breaks = seq(0, max(df$num) + 2, ceiling(length(seq(0, max(df$num) + 2)) / 5)),
-                         labels = seq(0, max(df$num) + 2, ceiling(length(seq(0, max(df$num) + 2)) / 5))) +
+      scale_y_continuous(limits = c(0, ifelse(is.na(max(df$num)), 2, max(df$num) + 2)),
+                         breaks = seq(0, ifelse(is.na(max(df$num)), 2, max(df$num) + 2), ceiling(length(seq(0, ifelse(is.na(max(df$num)), 2, max(df$num) + 2))) / 5)),
+                         labels = seq(0, ifelse(is.na(max(df$num)), 2, max(df$num) + 2), ceiling(length(seq(0, ifelse(is.na(max(df$num)), 2, max(df$num) + 2))) / 5))) +
       theme(panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             panel.background = element_blank(),
@@ -512,10 +514,10 @@ function(input, output, session) {
                                  outcome = apply(resultsTable$data, 1, checkWin),
                                  manualBet = resultsTable$data$manualBet,
                                  stringsAsFactors = FALSE)
-      print("results table")
-      print(resultsTable$data)
-      print("table_overall")
-      print(tableOverall)
+      # print("results table")
+      # print(resultsTable$data)
+      # print("table_overall")
+      # print(tableOverall)
 
       # Grab the manual bets and sum the bet outcomes
       manualTotals <- ifelse(nrow(tableOverall[tableOverall$manualBet == TRUE, ]) > 0,
@@ -531,12 +533,23 @@ function(input, output, session) {
                           data.frame(outcome = NULL,
                                      stringsAsFactors = FALSE))
       # Update the data for bottomLeftPlot data
-      bottomPlotsData$data <- cbind(manualNumWins = bottomPlotsData$data[1, 1] + sum(manualTotals$outcome > 0),
-                             manualWinnings = bottomPlotsData$data[1, 2] + sum(manualTotals$outcome),
-                             manualNumBets = bottomPlotsData$data[1, 2] + length(manualTotals$outcome),
-                             cpuNumWins = bottomPlotsData$data[1, 4] + sum(cpuTotals$outcome > 0),
-                             cpuWinnings = bottomPlotsData$data[1, 5] + sum(cpuTotals$outcome),
-                             cpuNumWins = bottomPlotsData$data[1, 6] + length(cpuTotals$outcome))
+      # print("manualTotals")
+      # print(manualTotals[[1]])
+      bottomPlot_results <- data.frame(manualNumWins = sum(manualTotals[[1]] > 0),
+                                       manualWinnings = sum(manualTotals[[1]]),
+                                       manualNumBets = length(manualTotals[[1]]),
+                                       cpuNumWins = sum(cpuTotals[[1]] > 0),
+                                       cpuWinnings = sum(cpuTotals[[1]]),
+                                       cpuNumBets = length(cpuTotals[[1]]))
+
+      bottomPlotsData$data <- apply(rbind(bottomPlotsData$data, bottomPlot_results), 2, sum)
+
+      # bottomPlotsData$data <- cbind(manualNumWins = bottomPlotsData$data[1, 1] + sum(manualTotals$outcome > 0),
+      #                        manualWinnings = bottomPlotsData$data[1, 2] + sum(manualTotals$outcome),
+      #                        manualNumBets = bottomPlotsData$data[1, 2] + length(manualTotals$outcome),
+      #                        cpuNumWins = bottomPlotsData$data[1, 4] + sum(cpuTotals$outcome > 0),
+      #                        cpuWinnings = bottomPlotsData$data[1, 5] + sum(cpuTotals$outcome),
+      #                        cpuNumWins = bottomPlotsData$data[1, 6] + length(cpuTotals$outcome))
 
       #print(bottomPlotsData$data)
 
@@ -599,8 +612,8 @@ function(input, output, session) {
           return(paste("lost: $", row["betAmount"], sep = ""))
         }
       } else if (row["type"] == "Dozen Bet") {
-        print("check")
-        print(roulette$winningSlot$dozen)
+        # print("check")
+        # print(roulette$winningSlot$dozen)
         if (substr(row["b1"], 1, 1) == roulette$winningSlot$dozen) {
           return(paste("won: $", payout, sep = ""))
         } else {
@@ -689,13 +702,13 @@ function(input, output, session) {
     if (nrow(resultsTable$data) == 0 | is.null(roulette$winningSlot)) {
       return(invisible(NULL))
     } else {
-      print("results table last")
-      print(resultsTable$data)
+      # print("results table last")
+      # print(resultsTable$data)
       table <- data.frame(slots = apply(resultsTable$data, 1, combineSlots),
                           betAmount = resultsTable$data$betAmount,
                           outcome = apply(resultsTable$data, 1, checkWin),
                           stringsAsFactors = FALSE)
-      print(table)
+      # print(table)
       DT::datatable(table, colnames = c("Slots", "Bet Amount", "Outcome"),
                 rownames = FALSE, options = list(pageLength = 5, sDom = "<\"top\">rt<\"bottom\">ip"))
     }
@@ -710,8 +723,8 @@ function(input, output, session) {
   })
 
   output$total <- renderText({
-    print("table")
-    print(nrow(resultsTable$data))
+    # print("table")
+    # print(nrow(resultsTable$data))
   if (nrow(resultsTable$data) == 0 | is.null(roulette$winningSlot)) {
     return(invisible(NULL))
   } else {
@@ -720,13 +733,13 @@ function(input, output, session) {
                         outcome = apply(resultsTable$data, 1, checkWin),
                         stringsAsFactors = FALSE)
 
-    print("table")
-    print(table)
+    # print("table")
+    # print(table)
     totals <- data.frame(outcome = apply(table, 1, computeTotal),
                          stringsAsFactors = FALSE)
 
-    print("totals")
-    print(totals)
+    # print("totals")
+    # print(totals)
     balance <- sum(totals$outcome)
     paste("Total for this round: ", balance, "$", sep = "")
   }
@@ -768,7 +781,7 @@ function(input, output, session) {
       paste("American Roulette ", Sys.Date(), ".csv", sep = "")
       },
     content = function(file) {
-      print(completeList$data)
+      # print(completeList$data)
       write.csv(completeList$data, file, row.names = FALSE)
     })
 }
